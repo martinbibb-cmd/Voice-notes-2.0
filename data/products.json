@@ -1,0 +1,296 @@
+{
+  "boilers": {
+    "combi": [
+      {
+        "id": "viessmann-050w-25kw",
+        "manufacturer": "Viessmann",
+        "model": "Vitodens 050-W 25kW",
+        "type": "combi",
+        "output": "25kW",
+        "efficiency": "94%",
+        "warranty": "7 years",
+        "features": [
+          "Compact design - only 400mm wide",
+          "Quiet operation - ideal for apartments",
+          "Weather compensation ready",
+          "Built-in frost protection",
+          "A-rated efficiency"
+        ],
+        "benefits": [
+          "Fits in tight spaces like kitchen cupboards",
+          "Won't disturb you or neighbors",
+          "Automatically adjusts to weather for best efficiency",
+          "Protected during cold weather",
+          "Lower energy bills"
+        ],
+        "bestFor": "Small to medium homes (1-3 bedrooms) with limited space",
+        "price_category": "medium"
+      },
+      {
+        "id": "worcester-greenstar-4000-30kw",
+        "manufacturer": "Worcester Bosch",
+        "model": "Greenstar 4000 30kW",
+        "type": "combi",
+        "output": "30kW",
+        "efficiency": "94%",
+        "warranty": "10 years",
+        "features": [
+          "UK's most popular boiler brand",
+          "10-year warranty as standard",
+          "Frost protection",
+          "Easy-to-use controls",
+          "Quiet Mark approved"
+        ],
+        "benefits": [
+          "Proven reliability and widespread engineer support",
+          "Long-term peace of mind",
+          "No winter freeze damage",
+          "Simple to operate for whole family",
+          "Certified quiet operation"
+        ],
+        "bestFor": "Medium homes (2-4 bedrooms) wanting trusted brand",
+        "price_category": "medium"
+      }
+    ],
+    "system": [
+      {
+        "id": "viessmann-200w-25kw",
+        "manufacturer": "Viessmann",
+        "model": "Vitodens 200-W 25kW",
+        "type": "system",
+        "output": "25kW",
+        "efficiency": "98%",
+        "warranty": "10 years",
+        "features": [
+          "Stainless steel Inox-Radial heat exchanger",
+          "Weather compensation included",
+          "ViCare app control",
+          "Lambda Pro Control for optimal efficiency",
+          "Compatible with solar thermal"
+        ],
+        "benefits": [
+          "Exceptional reliability and lifespan",
+          "Adjusts automatically to weather",
+          "Control heating from anywhere via smartphone",
+          "Maintains peak efficiency year-round",
+          "Future-proof for adding solar panels"
+        ],
+        "bestFor": "Larger homes (3-5+ bedrooms) with high performance needs",
+        "price_category": "premium"
+      },
+      {
+        "id": "worcester-greenstar-8000-30kw",
+        "manufacturer": "Worcester Bosch",
+        "model": "Greenstar 8000 Style 30kW",
+        "type": "system",
+        "output": "30kW",
+        "efficiency": "94%",
+        "warranty": "12 years",
+        "features": [
+          "Premium Worcester Bosch model",
+          "12-year warranty",
+          "Modern minimalist design",
+          "Green iQ technology",
+          "App control via EasyControl"
+        ],
+        "benefits": [
+          "Top-tier reliability",
+          "Industry-leading warranty",
+          "Stylish appearance if visible",
+          "Enhanced efficiency technology",
+          "Remote control and monitoring"
+        ],
+        "bestFor": "Premium installations in larger properties",
+        "price_category": "premium"
+      }
+    ]
+  },
+  "cylinders": {
+    "unvented": [
+      {
+        "id": "megaflo-eco-210l",
+        "manufacturer": "Heatrae Sadia",
+        "model": "Megaflo Eco 210L",
+        "type": "unvented",
+        "capacity": "210L",
+        "warranty": "25 years (tank), 2 years (parts)",
+        "features": [
+          "High-grade duplex stainless steel",
+          "Eco Glaze enamel lining",
+          "95mm insulation",
+          "Fast reheat coil",
+          "Mains pressure hot water"
+        ],
+        "benefits": [
+          "Extremely durable - won't corrode",
+          "Long-lasting protection",
+          "Minimal heat loss - lower bills",
+          "Quick recovery after heavy use",
+          "Powerful showers throughout home"
+        ],
+        "bestFor": "Families of 3-5 people with 2-3 bathrooms",
+        "price_category": "premium"
+      },
+      {
+        "id": "telford-tempest-200l",
+        "manufacturer": "Telford",
+        "model": "Tempest 200L",
+        "type": "unvented",
+        "capacity": "200L",
+        "warranty": "25 years (tank), 2 years (parts)",
+        "features": [
+          "Duplex stainless steel construction",
+          "Superior insulation",
+          "Compact footprint",
+          "Built-in safety valves",
+          "Suitable for hard water areas"
+        ],
+        "benefits": [
+          "Will never rust or corrode",
+          "Keeps water hot longer",
+          "Fits in smaller cupboards",
+          "Safe and certified",
+          "No limescale damage"
+        ],
+        "bestFor": "Medium to large homes needing reliable hot water",
+        "price_category": "medium"
+      }
+    ],
+    "vented": [
+      {
+        "id": "gledhill-stainless-180l",
+        "manufacturer": "Gledhill",
+        "model": "Stainless Lite Plus 180L",
+        "type": "vented",
+        "capacity": "180L",
+        "warranty": "25 years (tank), 2 years (parts)",
+        "features": [
+          "Stainless steel construction",
+          "High-quality insulation",
+          "Works with any water pressure",
+          "No annual servicing required",
+          "Simple reliable design"
+        ],
+        "benefits": [
+          "Long-lasting durability",
+          "Lower running costs",
+          "Perfect for low pressure areas",
+          "No annual G3 inspection costs",
+          "Fewer components to go wrong"
+        ],
+        "bestFor": "Homes with existing vented systems or low water pressure",
+        "price_category": "medium"
+      }
+    ]
+  },
+  "controls": [
+    {
+      "id": "nest-learning-thermostat",
+      "manufacturer": "Google",
+      "model": "Nest Learning Thermostat",
+      "type": "smart_thermostat",
+      "features": [
+        "Learns your schedule automatically",
+        "Control from anywhere via app",
+        "Energy history and tips",
+        "Attractive design",
+        "Works with Google Home / Alexa"
+      ],
+      "benefits": [
+        "Sets itself - no programming needed",
+        "Adjust heating on the go",
+        "See exactly where energy is used",
+        "Looks great on the wall",
+        "Voice control if you have smart speakers"
+      ],
+      "savings": "Average 8-15% on heating bills",
+      "price_category": "medium"
+    },
+    {
+      "id": "hive-active-heating-2",
+      "manufacturer": "Hive",
+      "model": "Hive Active Heating 2",
+      "type": "smart_thermostat",
+      "features": [
+        "British Gas backed support",
+        "Simple app control",
+        "Scheduling and geofencing",
+        "Holiday mode",
+        "Boost function"
+      ],
+      "benefits": [
+        "UK-based customer support",
+        "Easy to use for all ages",
+        "Heating on when you're home, off when not",
+        "Save energy when away",
+        "Quick heat when needed"
+      ],
+      "savings": "Average 10-15% on heating bills",
+      "price_category": "medium"
+    },
+    {
+      "id": "vicare-app-control",
+      "manufacturer": "Viessmann",
+      "model": "ViCare App Control",
+      "type": "smart_control",
+      "features": [
+        "Works seamlessly with Viessmann boilers",
+        "Full heating curve adjustment",
+        "Remote diagnostics",
+        "Energy monitoring",
+        "Automatic updates"
+      ],
+      "benefits": [
+        "Optimized specifically for your Viessmann boiler",
+        "Fine-tune for maximum efficiency",
+        "Engineer can help remotely",
+        "Track usage and identify savings",
+        "Always up to date with latest features"
+      ],
+      "savings": "Up to 20% with optimal setup",
+      "price_category": "low"
+    }
+  ],
+  "accessories": [
+    {
+      "id": "magnaclean-professional-2",
+      "manufacturer": "Adey",
+      "model": "MagnaClean Professional 2",
+      "type": "filter",
+      "features": [
+        "Magnetic and non-magnetic filtration",
+        "Removes system sludge",
+        "Easy service point",
+        "Suitable for all systems"
+      ],
+      "benefits": [
+        "Protects boiler from debris damage",
+        "Improves efficiency",
+        "Quick to check and clean",
+        "Works with any boiler brand"
+      ],
+      "why_essential": "Extends boiler life by up to 30% and maintains peak efficiency",
+      "price_category": "low"
+    },
+    {
+      "id": "scale-reducer",
+      "manufacturer": "Fernox",
+      "model": "Scale Reducer",
+      "type": "water_treatment",
+      "features": [
+        "Prevents limescale buildup",
+        "No salt or electricity needed",
+        "Maintenance-free",
+        "10-year lifespan"
+      ],
+      "benefits": [
+        "Protects heating system in hard water areas",
+        "Set and forget installation",
+        "No ongoing costs",
+        "Long-term protection"
+      ],
+      "why_essential": "Critical for hard water areas to prevent expensive repairs",
+      "price_category": "low"
+    }
+  ]
+}

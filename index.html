@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Voice Notes 2.0 - Professional Survey & Recommendations</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --bg-secondary: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --accent: #667eea;
+      --accent-hover: #5a67d8;
+      --success: #10b981;
+      --success-soft: #d1fae5;
+      --muted: #64748b;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+      --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-secondary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--bg-gradient);
+      color: #fff;
+      padding: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    header h1 {
+      margin: 0 0 8px 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    .tabs {
+      background: white;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      gap: 0;
+      padding: 0 20px;
+      overflow-x: auto;
+    }
+
+    .tab {
+      padding: 16px 24px;
+      background: none;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .tab:hover {
+      color: var(--accent);
+    }
+
+    .tab.active {
+      color: var(--accent);
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .tab-content {
+      display: none;
+      padding: 20px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      margin: 0 0 16px 0;
+      font-size: 1.3rem;
+      color: #1e293b;
+    }
+
+    .card h3 {
+      margin: 16px 0 12px 0;
+      font-size: 1.1rem;
+      color: #334155;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-secondary {
+      background: #64748b;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-recording {
+      background: #fee2e2;
+      color: var(--danger);
+      animation: pulse 2s infinite;
+    }
+
+    .status-ready {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    #canvas-container {
+      position: relative;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #f1f5f9;
+      display: none;
+      margin: 20px 0;
+    }
+
+    #canvas-container.active {
+      display: block;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .photo-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .photo-item:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .photo-caption {
+      padding: 8px;
+      background: white;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .toolbar button {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+
+    .sections-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-item {
+      padding: 16px;
+      background: #f8fafc;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+    }
+
+    .section-item h4 {
+      margin: 0 0 8px 0;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .section-item p {
+      margin: 0;
+      line-height: 1.6;
+      color: #475569;
+    }
+
+    .recommendation-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .recommendation-card.best {
+      border-color: var(--success);
+      background: linear-gradient(to right, #f0fdf4, white);
+    }
+
+    .recommendation-card h3 {
+      margin-top: 0;
+      color: #1e293b;
+    }
+
+    .features-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .features-col h4 {
+      color: var(--success);
+      margin: 0 0 8px 0;
+    }
+
+    .features-col.limitations h4 {
+      color: var(--warning);
+    }
+
+    .features-col ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .features-col li {
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .features-list {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        padding: 0 12px;
+      }
+
+      .tab {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .export-section {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: var(--radius);
+      margin-top: 24px;
+    }
+
+    .export-section h3 {
+      margin: 0 0 16px 0;
+      color: white;
+    }
+
+    .export-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .export-buttons .btn {
+      background: white;
+      color: var(--accent);
+    }
+
+    .export-buttons .btn:hover {
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Voice Notes 2.0</h1>
+    <p>Professional Survey Tool with Recommendations & Photo Markup</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="voice">Voice Notes</button>
+    <button class="tab" data-tab="photos">Photos & Markup</button>
+    <button class="tab" data-tab="recommendations">Recommendations</button>
+    <button class="tab" data-tab="export">Export Job</button>
+  </nav>
+
+  <main>
+    <!-- VOICE NOTES TAB -->
+    <div class="tab-content active" id="voice">
+      <div class="grid grid-2">
+        <div>
+          <div class="card">
+            <h2>Recording Controls</h2>
+            <div style="margin-bottom: 16px;">
+              <span class="status-badge status-ready" id="status-badge">Ready</span>
+            </div>
+            <div class="toolbar">
+              <button class="btn btn-success" id="start-recording">Start Recording</button>
+              <button class="btn btn-secondary" id="pause-recording" disabled>Pause</button>
+              <button class="btn btn-danger" id="stop-recording" disabled>Finish</button>
+            </div>
+            <div class="form-group">
+              <label for="current-section">Current Section:</label>
+              <select id="current-section">
+                <option value="customer-info">Customer Information</option>
+                <option value="site-survey">Site Survey</option>
+                <option value="system-details">System Details</option>
+                <option value="measurements">Measurements</option>
+                <option value="requirements">Customer Requirements</option>
+                <option value="safety-notes">Safety Notes</option>
+                <option value="recommendations">Recommendations</option>
+                <option value="next-steps">Next Steps</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Live Transcript</h2>
+            <textarea id="transcript" placeholder="Your voice notes will appear here..."></textarea>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <h2>Sections</h2>
+            <div class="sections-list" id="sections-list">
+              <p style="color: var(--muted); text-align: center;">No sections captured yet. Start recording to begin.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTOS TAB -->
+    <div class="tab-content" id="photos">
+      <div class="card">
+        <h2>Photo Capture & Markup</h2>
+
+        <div class="toolbar">
+          <button class="btn" id="take-photo">
+            <span id="camera-icon">📷</span> Take Photo
+          </button>
+          <button class="btn btn-secondary" id="upload-photo">Upload Photo</button>
+          <input type="file" id="photo-input" accept="image/*">
+        </div>
+
+        <div id="canvas-container">
+          <canvas id="markup-canvas"></canvas>
+        </div>
+
+        <div class="toolbar" id="markup-tools" style="display: none;">
+          <button class="btn btn-secondary" data-tool="point">● Point</button>
+          <button class="btn btn-secondary" data-tool="rectangle">▭ Rectangle</button>
+          <button class="btn btn-secondary" data-tool="circle">○ Circle</button>
+          <button class="btn btn-secondary" data-tool="text">T Text</button>
+          <button class="btn btn-secondary" data-tool="arrow">→ Arrow</button>
+          <button class="btn btn-danger" id="clear-markup">Clear All</button>
+          <button class="btn btn-success" id="save-marked-photo">Save Marked Photo</button>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="photo-annotation">Voice Annotation for Current Photo:</label>
+          <textarea id="photo-annotation" placeholder="Describe what you're photographing..."></textarea>
+          <button class="btn" id="annotate-with-voice" style="margin-top: 8px;">🎤 Annotate with Voice</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Photo Gallery</h2>
+        <div class="photo-grid" id="photo-gallery">
+          <p style="color: var(--muted); text-align: center; grid-column: 1/-1;">No photos yet. Take or upload photos to get started.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMMENDATIONS TAB -->
+    <div class="tab-content" id="recommendations">
+      <div class="card">
+        <h2>Customer Profile</h2>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label for="customer-name">Customer Name:</label>
+            <input type="text" id="customer-name" placeholder="John Smith">
+          </div>
+          <div class="form-group">
+            <label for="property-type">Property Type:</label>
+            <select id="property-type">
+              <option value="flat">Flat/Apartment</option>
+              <option value="terraced">Terraced House</option>
+              <option value="semi">Semi-Detached</option>
+              <option value="detached">Detached House</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bedrooms">Bedrooms:</label>
+            <input type="number" id="bedrooms" min="1" max="10" value="3">
+          </div>
+          <div class="form-group">
+            <label for="bathrooms">Bathrooms:</label>
+            <input type="number" id="bathrooms" min="1" max="5" value="2">
+          </div>
+          <div class="form-group">
+            <label for="occupants">Number of Occupants:</label>
+            <input type="number" id="occupants" min="1" max="10" value="4">
+          </div>
+          <div class="form-group">
+            <label for="current-system">Current System:</label>
+            <select id="current-system">
+              <option value="combi">Combi Boiler</option>
+              <option value="system">System Boiler</option>
+              <option value="regular">Regular Boiler</option>
+              <option value="other">Other/Unknown</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn" id="generate-recommendations">Generate Recommendations</button>
+      </div>
+
+      <div id="recommendations-output">
+        <!-- Recommendations will be inserted here -->
+      </div>
+    </div>
+
+    <!-- EXPORT TAB -->
+    <div class="tab-content" id="export">
+      <div class="card">
+        <h2>Job Summary</h2>
+        <div class="form-group">
+          <label for="job-name">Job Name:</label>
+          <input type="text" id="job-name" placeholder="Smith_Survey_2025-11-19">
+        </div>
+        <div style="padding: 16px; background: #f8fafc; border-radius: 8px; margin: 16px 0;">
+          <p><strong>Sections Captured:</strong> <span id="export-sections-count">0</span></p>
+          <p><strong>Photos Taken:</strong> <span id="export-photos-count">0</span></p>
+          <p><strong>Audio Duration:</strong> <span id="export-audio-duration">0:00</span></p>
+          <p><strong>Recommendations:</strong> <span id="export-recommendations-count">0</span></p>
+        </div>
+      </div>
+
+      <div class="export-section">
+        <h3>Export Options</h3>
+        <div class="export-buttons">
+          <button class="btn" id="export-customer-pdf">
+            Customer Recommendations PDF
+          </button>
+          <button class="btn" id="export-internal-folder">
+            Internal Job Folder (ZIP)
+          </button>
+          <button class="btn" id="export-transcript">
+            Transcript Only
+          </button>
+          <button class="btn" id="export-all-photos">
+            All Photos (ZIP)
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Customer Document Preview</h2>
+        <p style="color: var(--muted);">
+          The customer-facing document will include:
+        </p>
+        <ul style="line-height: 1.8;">
+          <li><strong>Professional Summary:</strong> Clear overview in plain language</li>
+          <li><strong>Tailored Recommendations:</strong> Specific products with features & benefits</li>
+          <li><strong>Annotated Photos:</strong> All marked-up photos with descriptions</li>
+          <li><strong>Detailed Rationale:</strong> Why each recommendation is best for them</li>
+          <li><strong>Next Steps:</strong> Clear action items</li>
+        </ul>
+        <button class="btn" id="preview-customer-doc">Preview Customer Document</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/main.js" type="module"></script>
+</body>
+</html>
