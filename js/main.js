@@ -109,6 +109,12 @@ class VoiceNotes2App {
         statusBadge.textContent = 'Recording...';
         statusBadge.className = 'status-badge status-recording';
 
+        // Update UI enhancements if available
+        if (window.uiEnhancements) {
+          window.uiEnhancements.setAudioStatus('recording', 'Recording');
+          window.uiEnhancements.setLiveTranscriptBadge(true);
+        }
+
         this.startAutoSave();
       } catch (error) {
         console.error('Failed to start recording:', error);
@@ -122,11 +128,23 @@ class VoiceNotes2App {
         this.state.isPaused = false;
         pauseBtn.textContent = 'Pause';
         statusBadge.textContent = 'Recording...';
+
+        // Update UI enhancements if available
+        if (window.uiEnhancements) {
+          window.uiEnhancements.setAudioStatus('recording', 'Recording');
+          window.uiEnhancements.setLiveTranscriptBadge(true);
+        }
       } else {
         this.voiceRecorder.pause();
         this.state.isPaused = true;
         pauseBtn.textContent = 'Resume';
         statusBadge.textContent = 'Paused';
+
+        // Update UI enhancements if available
+        if (window.uiEnhancements) {
+          window.uiEnhancements.setAudioStatus('paused', 'Paused');
+          window.uiEnhancements.setLiveTranscriptBadge(false);
+        }
       }
     });
 
@@ -143,6 +161,13 @@ class VoiceNotes2App {
       statusBadge.textContent = 'Ready';
       statusBadge.className = 'status-badge status-ready';
 
+      // Update UI enhancements if available
+      if (window.uiEnhancements) {
+        window.uiEnhancements.setAudioStatus('idle', 'Ready');
+        window.uiEnhancements.setLiveTranscriptBadge(false);
+        window.uiEnhancements.cleanupAudioLevelMeter();
+      }
+
       this.stopAutoSave();
       this.saveToLocalStorage();
     });
@@ -152,10 +177,24 @@ class VoiceNotes2App {
       transcriptArea.value = text;
       this.state.transcript = text;
       this.updateSections(text);
+
+      // Update processed transcript display
+      if (window.uiEnhancements) {
+        window.uiEnhancements.updateProcessedTranscript(text);
+      }
     });
 
     this.voiceRecorder.on('audio', (blob) => {
       this.state.currentJob.audioBlobs.push(blob);
+    });
+
+    // Listen for audio level updates to update the level bar
+    this.voiceRecorder.on('audio-level', (level) => {
+      const audioLevelBar = document.getElementById('audioLevelBar');
+      if (audioLevelBar) {
+        const percentage = level * 100;
+        audioLevelBar.style.width = `${percentage}%`;
+      }
     });
 
     // Process Now button
@@ -558,6 +597,15 @@ class VoiceNotes2App {
         </div>
       `;
     }).join('');
+
+    // Update AI notes display if available
+    if (window.uiEnhancements && sections.length > 0) {
+      const aiNotes = sections.map(section => ({
+        title: section.name,
+        content: section.naturalLanguage || section.content || 'No content'
+      }));
+      window.uiEnhancements.updateAINotes(aiNotes);
+    }
   }
 
   updatePhotoGallery() {

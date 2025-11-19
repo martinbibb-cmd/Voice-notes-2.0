@@ -15,9 +15,9 @@ function initIntegration() {
   console.log('Initializing UI integration...');
 
   // Get the original buttons
-  const startLiveBtn = document.getElementById('startLiveBtn');
-  const pauseLiveBtn = document.getElementById('pauseLiveBtn');
-  const finishLiveBtn = document.getElementById('finishLiveBtn');
+  const startLiveBtn = document.getElementById('start-recording');
+  const pauseLiveBtn = document.getElementById('pause-recording');
+  const finishLiveBtn = document.getElementById('stop-recording');
 
   // Store original handlers
   const originalStartHandler = startLiveBtn?.onclick;
