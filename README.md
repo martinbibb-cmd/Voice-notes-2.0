@@ -32,17 +32,43 @@ After: Intelligent recommendations that:
 
 ## 🚀 Key Features
 
-### 1. Enhanced Voice Recording
+### 1. AI-Powered Section Auto-Population ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **14 structured sections** automatically populated by AI
+- **No manual section selection** - just speak naturally
+- **OpenAI GPT-4 processing** via Cloudflare Worker
+- **Smart deduplication** - avoids repeating information
+- **Dual format output**: Bullet-point notes + natural language summaries
+- **Auto-debouncing** - processes every 3 seconds during pauses
+- **Manual trigger** - "Process Now" button for immediate processing
+
+**The 14 Depot Sections:**
+1. Needs
+2. Working at heights
+3. System characteristics
+4. Components that require assistance
+5. Restrictions to work
+6. External hazards
+7. Delivery notes
+8. Office notes
+9. New boiler and controls
+10. Flue
+11. Pipe work
+12. Disruption
+13. Customer actions
+14. Future plans
+
+### 2. Enhanced Voice Recording
 **Integrated from: Depot-voice-notes**
 
 - Real-time speech-to-text transcription (Web Speech API)
 - Audio level monitoring and waveform visualization
 - Adaptive chunking based on network speed
-- Section-based note organization
 - Auto-save to local storage
 - Pause/resume functionality
 
-### 2. Context-Aware Recommendations Engine ⭐ NEW
+### 3. Context-Aware Recommendations Engine ⭐ NEW
 **Integrated from: System-recommendation + Custom transcript analysis**
 
 **The recommendations engine now analyzes transcripts to detect:**
@@ -81,7 +107,7 @@ After: Intelligent recommendations that:
 - Radiator work
 - Insulation
 
-### 3. FAB Analysis with Smart Highlighting ⭐ NEW
+### 4. FAB Analysis with Smart Highlighting ⭐ NEW
 
 Each recommendation now shows:
 
@@ -106,7 +132,7 @@ Items that directly address issues mentioned in your survey are:
 - 🟡 Yellow highlighted background
 - Labeled with reason ("Addresses cold radiators you mentioned")
 
-### 4. Powerflush Auto-Detection ⭐ NEW
+### 5. Powerflush Auto-Detection ⭐ NEW
 
 Automatically recommends powerflush when transcript mentions:
 - Cold radiators
@@ -116,7 +142,7 @@ Automatically recommends powerflush when transcript mentions:
 
 **Shows exactly:** Which issues you mentioned and how powerflush solves each one.
 
-### 5. Discussion Context Display ⭐ NEW
+### 6. Discussion Context Display ⭐ NEW
 
 Each recommendation card shows:
 - **"Discussed in survey" badge** if system was explicitly mentioned
@@ -127,7 +153,7 @@ Each recommendation card shows:
   - 🔵 Medium (blue): Other issues
 - **Specific explanations** linking FAB items to survey discussion
 
-### 6. Photo Markup & Annotation
+### 7. Photo Markup & Annotation
 **Integrated from: Clearance-genie concepts**
 
 - Camera capture or file upload
@@ -140,7 +166,7 @@ Each recommendation card shows:
 - Photo gallery with captions
 - Original + marked versions saved
 
-### 7. Professional Export System
+### 8. Professional Export System
 
 - **Customer PDF**: Polished recommendations with FAB analysis
 - **Internal Job Folder**: Complete survey data (audio, photos, transcript)

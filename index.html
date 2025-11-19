@@ -647,18 +647,10 @@
               <button class="btn btn-secondary" id="pause-recording" disabled>Pause</button>
               <button class="btn btn-danger" id="stop-recording" disabled>Finish</button>
             </div>
-            <div class="form-group">
-              <label for="current-section">Current Section:</label>
-              <select id="current-section">
-                <option value="customer-info">Customer Information</option>
-                <option value="site-survey">Site Survey</option>
-                <option value="system-details">System Details</option>
-                <option value="measurements">Measurements</option>
-                <option value="requirements">Customer Requirements</option>
-                <option value="safety-notes">Safety Notes</option>
-                <option value="recommendations">Recommendations</option>
-                <option value="next-steps">Next Steps</option>
-              </select>
+            <div style="padding: 12px; background: #e0f2fe; border-radius: 8px; margin-top: 12px;">
+              <p style="margin: 0; color: #0369a1; font-size: 0.9em;">
+                <strong>✨ AI Auto-Sectioning:</strong> Just speak naturally. The AI will automatically organize your notes into structured sections.
+              </p>
             </div>
           </div>
 
@@ -670,7 +662,12 @@
 
         <div>
           <div class="card">
-            <h2>Sections</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h2 style="margin: 0;">Sections</h2>
+              <button class="btn btn-secondary" id="process-now-btn" style="padding: 8px 16px; font-size: 0.9em;">
+                🤖 Process Now
+              </button>
+            </div>
             <div class="sections-list" id="sections-list">
               <p style="color: var(--muted); text-align: center;">No sections captured yet. Start recording to begin.</p>
             </div>
