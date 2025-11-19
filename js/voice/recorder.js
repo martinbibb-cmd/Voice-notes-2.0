@@ -1,5 +1,6 @@
-// Voice Recorder Module
-// Handles audio recording and speech-to-text transcription
+// Enhanced Voice Recorder Module
+// Integrates Depot-voice-notes AI transcription capabilities
+// with audio visualization and adaptive chunking
 
 export default class VoiceRecorder {
   constructor() {
@@ -11,12 +12,20 @@ export default class VoiceRecorder {
     this.isRecording = false;
     this.isPaused = false;
     this.listeners = {};
+    this.audioContext = null;
+    this.analyser = null;
+    this.animationId = null;
+    this.startTime = null;
+    this.pausedTime = 0;
+
+    // Network adaptive settings
+    this.chunkInterval = 10000; // Default 10s
+    this.networkSpeed = 'unknown';
 
     this.initSpeechRecognition();
   }
 
   initSpeechRecognition() {
-    // Check for browser support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
@@ -59,28 +68,61 @@ export default class VoiceRecorder {
     };
 
     this.recognition.onend = () => {
-      // Restart if still recording and not paused
       if (this.isRecording && !this.isPaused) {
-        this.recognition.start();
+        try {
+          this.recognition.start();
+        } catch (e) {
+          console.warn('Could not restart recognition:', e);
+        }
       }
     };
   }
 
+  async detectNetworkSpeed() {
+    try {
+      const start = performance.now();
+      await fetch('https://www.google.com/favicon.ico', { cache: 'no-store' });
+      const latency = performance.now() - start;
+
+      if (latency < 200) {
+        this.networkSpeed = 'fast';
+        this.chunkInterval = 10000;
+      } else if (latency < 500) {
+        this.networkSpeed = 'medium';
+        this.chunkInterval = 20000;
+      } else {
+        this.networkSpeed = 'slow';
+        this.chunkInterval = 30000;
+      }
+
+      this.emit('network-speed', { speed: this.networkSpeed, latency });
+    } catch (error) {
+      this.networkSpeed = 'offline';
+      this.emit('network-speed', { speed: 'offline', latency: -1 });
+    }
+  }
+
   async start() {
     try {
+      // Detect network speed for adaptive chunking
+      await this.detectNetworkSpeed();
+
       // Start speech recognition
       if (this.recognition) {
         this.recognition.start();
       }
 
-      // Start audio recording
+      // Start audio recording with visualization
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       await this.startAudioRecording(stream);
+      this.setupAudioVisualization(stream);
 
       this.isRecording = true;
       this.isPaused = false;
       this.transcript = '';
+      this.startTime = Date.now();
 
+      this.emit('started');
       console.log('Voice recording started');
     } catch (error) {
       console.error('Failed to start voice recording:', error);
@@ -111,6 +153,7 @@ export default class VoiceRecorder {
     this.mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         this.audioChunks.push(event.data);
+        this.emit('chunk', event.data);
       }
     };
 
@@ -120,9 +163,50 @@ export default class VoiceRecorder {
 
       // Stop all tracks
       stream.getTracks().forEach(track => track.stop());
+
+      // Stop visualization
+      if (this.animationId) {
+        cancelAnimationFrame(this.animationId);
+      }
+      if (this.audioContext) {
+        this.audioContext.close();
+      }
     };
 
-    this.mediaRecorder.start(1000); // Collect data every second
+    // Start with adaptive chunking interval
+    this.mediaRecorder.start(this.chunkInterval);
+  }
+
+  setupAudioVisualization(stream) {
+    try {
+      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      this.analyser = this.audioContext.createAnalyser();
+      const source = this.audioContext.createMediaStreamSource(stream);
+
+      source.connect(this.analyser);
+      this.analyser.fftSize = 256;
+
+      const bufferLength = this.analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const visualize = () => {
+        if (!this.isRecording || this.isPaused) return;
+
+        this.animationId = requestAnimationFrame(visualize);
+        this.analyser.getByteFrequencyData(dataArray);
+
+        // Calculate average volume
+        const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+        const normalizedVolume = average / 255;
+
+        this.emit('audio-level', normalizedVolume);
+        this.emit('waveform', dataArray);
+      };
+
+      visualize();
+    } catch (error) {
+      console.warn('Audio visualization setup failed:', error);
+    }
   }
 
   pause() {
@@ -136,7 +220,13 @@ export default class VoiceRecorder {
       this.mediaRecorder.pause();
     }
 
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
+
     this.isPaused = true;
+    this.pausedTime = Date.now();
+    this.emit('paused');
     console.log('Voice recording paused');
   }
 
@@ -152,6 +242,7 @@ export default class VoiceRecorder {
     }
 
     this.isPaused = false;
+    this.emit('resumed');
     console.log('Voice recording resumed');
   }
 
@@ -166,14 +257,18 @@ export default class VoiceRecorder {
       this.mediaRecorder.stop();
     }
 
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+    }
+
     this.isRecording = false;
     this.isPaused = false;
 
+    this.emit('stopped');
     console.log('Voice recording stopped');
   }
 
   async quickCapture(duration = 5000) {
-    // Quick capture for photo annotations
     return new Promise((resolve, reject) => {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -203,7 +298,6 @@ export default class VoiceRecorder {
 
       recognition.start();
 
-      // Auto-stop after duration
       setTimeout(() => {
         recognition.stop();
       }, duration);
@@ -217,6 +311,12 @@ export default class VoiceRecorder {
   clearTranscript() {
     this.transcript = '';
     this.interimTranscript = '';
+  }
+
+  getDuration() {
+    if (!this.startTime) return 0;
+    const now = this.isPaused ? this.pausedTime : Date.now();
+    return Math.floor((now - this.startTime) / 1000);
   }
 
   // Event emitter methods

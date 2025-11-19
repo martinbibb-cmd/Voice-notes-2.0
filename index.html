@@ -363,9 +363,179 @@
       background: linear-gradient(to right, #f0fdf4, white);
     }
 
+    .recommendation-card.discussed {
+      border-left: 4px solid var(--accent);
+    }
+
     .recommendation-card h3 {
       margin-top: 0;
       color: #1e293b;
+    }
+
+    .badge-discussed {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* FAB Analysis Styles */
+    .fab-analysis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .fab-section {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .fab-heading {
+      margin: 0 0 12px 0;
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .fab-list {
+      margin: 0;
+      padding-left: 20px;
+      list-style: none;
+    }
+
+    .fab-list li {
+      margin-bottom: 10px;
+      line-height: 1.6;
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .fab-list li:before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+
+    .fab-list li.highlighted {
+      background: linear-gradient(to right, #fef3c7, transparent);
+      padding: 8px 8px 8px 24px;
+      margin-left: -8px;
+      border-left: 3px solid var(--warning);
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .fab-list li.highlighted:before {
+      color: var(--warning);
+      content: '★';
+    }
+
+    .highlight-reason {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--warning);
+      font-style: italic;
+      margin-top: 4px;
+      font-weight: normal;
+    }
+
+    /* Discussion Context Styles */
+    .discussion-context {
+      margin-top: 20px;
+      padding: 16px;
+      background: linear-gradient(to right, #ede9fe, white);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+    }
+
+    .context-section {
+      margin-bottom: 16px;
+    }
+
+    .context-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .context-section strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .context-excerpts {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .excerpt {
+      padding: 10px;
+      background: white;
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      font-style: italic;
+      color: #475569;
+      font-size: 0.95rem;
+    }
+
+    .excerpt-mini {
+      margin-top: 6px;
+      padding: 6px 10px;
+      background: white;
+      border-left: 2px solid #cbd5e1;
+      border-radius: 3px;
+      font-style: italic;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+
+    .context-issues {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .context-issues li {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: white;
+      border-radius: 6px;
+      border-left: 4px solid var(--muted);
+    }
+
+    .context-issues li.issue-critical {
+      border-left-color: var(--danger);
+      background: #fef2f2;
+    }
+
+    .context-issues li.issue-high {
+      border-left-color: var(--warning);
+      background: #fefce8;
+    }
+
+    .context-issues li.issue-medium-high,
+    .context-issues li.issue-medium {
+      border-left-color: #60a5fa;
+      background: #eff6ff;
+    }
+
+    .context-issues li strong {
+      display: block;
+      margin-bottom: 4px;
+      text-transform: capitalize;
     }
 
     .features-list {

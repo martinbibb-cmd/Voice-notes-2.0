@@ -237,7 +237,9 @@ class VoiceNotes2App {
         currentSystem: document.getElementById('current-system').value
       };
 
-      const recommendations = this.recommendations.generate(profile);
+      // Pass transcript for context-aware recommendations
+      const transcript = this.state.transcript;
+      const recommendations = this.recommendations.generate(profile, transcript);
       this.state.currentJob.recommendations = recommendations;
       this.displayRecommendations(recommendations);
     });
@@ -370,32 +372,133 @@ class VoiceNotes2App {
   displayRecommendations(recommendations) {
     const output = document.getElementById('recommendations-output');
 
-    output.innerHTML = recommendations.map((rec, index) => `
-      <div class="recommendation-card ${index === 0 ? 'best' : ''}">
-        <h3>${index === 0 ? '✓ ' : ''}${rec.title}</h3>
-        <p style="color: var(--muted); margin: 8px 0 16px 0;">${rec.summary}</p>
+    output.innerHTML = recommendations.map((rec, index) => {
+      const isBest = index === 0;
+      const isMentioned = rec.discussionContext?.mentioned;
 
-        <div class="features-list">
-          <div class="features-col">
-            <h4>Strengths & Benefits</h4>
-            <ul>
-              ${rec.strengths.map(s => `<li>${s}</li>`).join('')}
-            </ul>
+      return `
+        <div class="recommendation-card ${isBest ? 'best' : ''} ${isMentioned ? 'discussed' : ''}">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+            <h3 style="margin: 0;">${isBest ? '✓ ' : ''}${rec.title}</h3>
+            ${isMentioned ? '<span class="badge-discussed">Discussed in survey</span>' : ''}
           </div>
-          <div class="features-col limitations">
-            <h4>Considerations</h4>
-            <ul>
-              ${rec.limitations.map(l => `<li>${l}</li>`).join('')}
-            </ul>
+
+          <p style="color: var(--muted); margin: 8px 0 16px 0;">${rec.summary}</p>
+
+          ${rec.fab ? this.renderFAB(rec.fab) : this.renderTraditionalView(rec)}
+
+          <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px;">
+            <strong>Why this is recommended for you:</strong>
+            <p style="margin: 8px 0 0 0;">${rec.rationale}</p>
           </div>
+
+          ${this.renderDiscussionContext(rec.discussionContext)}
+        </div>
+      `;
+    }).join('');
+  }
+
+  renderFAB(fab) {
+    return `
+      <div class="fab-analysis">
+        <div class="fab-section">
+          <h4 class="fab-heading">Features</h4>
+          <ul class="fab-list">
+            ${fab.features.map(f => `
+              <li class="${f.highlighted ? 'highlighted' : ''}">
+                ${f.text}
+                ${f.highlighted ? `<span class="highlight-reason">${f.reason}</span>` : ''}
+              </li>
+            `).join('')}
+          </ul>
         </div>
 
-        <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px;">
-          <strong>Why this is recommended for you:</strong>
-          <p style="margin: 8px 0 0 0;">${rec.rationale}</p>
+        <div class="fab-section">
+          <h4 class="fab-heading">Advantages</h4>
+          <ul class="fab-list">
+            ${fab.advantages.map(a => `
+              <li class="${a.highlighted ? 'highlighted' : ''}">
+                ${a.text}
+                ${a.highlighted ? `<span class="highlight-reason">${a.reason}</span>` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+
+        <div class="fab-section">
+          <h4 class="fab-heading">Benefits</h4>
+          <ul class="fab-list">
+            ${fab.benefits.map(b => `
+              <li class="${b.highlighted ? 'highlighted' : ''}">
+                ${b.text}
+                ${b.highlighted ? `<span class="highlight-reason">${b.reason}</span>` : ''}
+              </li>
+            `).join('')}
+          </ul>
         </div>
       </div>
-    `).join('');
+    `;
+  }
+
+  renderTraditionalView(rec) {
+    if (!rec.strengths || !rec.limitations) return '';
+
+    return `
+      <div class="features-list">
+        <div class="features-col">
+          <h4>Strengths & Benefits</h4>
+          <ul>
+            ${rec.strengths.map(s => `<li>${s}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="features-col limitations">
+          <h4>Considerations</h4>
+          <ul>
+            ${rec.limitations.map(l => `<li>${l}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+
+  renderDiscussionContext(context) {
+    if (!context || (!context.mentioned && context.relatedIssues.length === 0)) {
+      return '';
+    }
+
+    let html = '<div class="discussion-context">';
+
+    if (context.mentioned && context.excerpts.length > 0) {
+      html += `
+        <div class="context-section">
+          <strong>You mentioned:</strong>
+          <div class="context-excerpts">
+            ${context.excerpts.slice(0, 2).map(exc =>
+              `<div class="excerpt">"${exc}"</div>`
+            ).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (context.relatedIssues.length > 0) {
+      html += `
+        <div class="context-section">
+          <strong>Addresses your concerns:</strong>
+          <ul class="context-issues">
+            ${context.relatedIssues.map(issue => `
+              <li class="issue-${issue.severity}">
+                <strong>${issue.type.replace(/_/g, ' ')}</strong>
+                ${issue.excerpts[0] ? `<div class="excerpt-mini">"${issue.excerpts[0]}"</div>` : ''}
+              </li>
+            `).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    html += '</div>';
+    return html;
   }
 
   updateExportSummary() {
