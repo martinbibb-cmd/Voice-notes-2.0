@@ -1,0 +1,18 @@
+{
+  "sections": [
+    { "name": "Needs", "description": "" },
+    { "name": "Working at heights", "description": "" },
+    { "name": "System characteristics", "description": "" },
+    { "name": "Components that require assistance", "description": "" },
+    { "name": "Restrictions to work", "description": "" },
+    { "name": "External hazards", "description": "" },
+    { "name": "Delivery notes", "description": "" },
+    { "name": "Office notes", "description": "" },
+    { "name": "New boiler and controls", "description": "" },
+    { "name": "Flue", "description": "" },
+    { "name": "Pipe work", "description": "" },
+    { "name": "Disruption", "description": "" },
+    { "name": "Customer actions", "description": "" },
+    { "name": "Future plans", "description": "Notes about any future work or follow-on visits." }
+  ]
+}

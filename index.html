@@ -612,6 +612,240 @@
     .export-buttons .btn:hover {
       background: #f8fafc;
     }
+
+    /* Toolbar styles */
+    .toolbar-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .pill-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .pill-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .danger-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .danger-btn:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      max-width: 900px;
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 90%;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+    .modal-close {
+      background: var(--danger);
+      padding: 4px 12px;
+      font-size: .7rem;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .modal-section {
+      margin-bottom: 16px;
+    }
+    .modal-section h3 {
+      font-size: .9rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    /* Save Menu Modal */
+    .save-menu-modal {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .save-menu-content {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .save-section h3 {
+      margin: 0 0 12px 0;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    .save-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .save-option-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .save-option-item:hover {
+      border-color: var(--accent);
+      background: #f8fafc;
+    }
+    .save-option-item input[type="checkbox"] {
+      margin-top: 2px;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .option-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+    .option-title {
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #0f172a;
+    }
+    .option-description {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .format-options {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .format-option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .format-option-item:hover {
+      border-color: var(--accent);
+      background: #f8fafc;
+    }
+    .format-option-item input[type="radio"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    .save-filename-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+    .save-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .session-prompt-modal {
+      background: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 500px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .session-prompt-modal h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+    }
+    .session-prompt-modal input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: .85rem;
+      margin-bottom: 16px;
+    }
+    .session-prompt-modal .button-group {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
   </style>
 </head>
 <body>
@@ -621,9 +855,16 @@
         <h1>Voice Notes 2.0</h1>
         <p>Professional Survey Tool with Recommendations & Photo Markup</p>
       </div>
-      <a href="settings.html" style="color: white; text-decoration: none; font-size: 0.9rem; padding: 8px 16px; background: rgba(255,255,255,0.2); border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-        ⚙️ Settings
-      </a>
+    </div>
+    <div class="toolbar-row">
+      <button id="saveMenuBtn" class="pill-secondary">💾 Save</button>
+      <button id="loadSessionBtn" class="pill-secondary">📂 Load session</button>
+      <button id="duplicateSessionBtn" class="pill-secondary">📋 Duplicate</button>
+      <button id="createQuoteBtn" class="pill-secondary">💰 Create quote</button>
+      <button id="importAudioBtn" class="pill-secondary">🎵 Import audio</button>
+      <button id="newJobBtn" class="danger-btn">🆕 New session</button>
+      <a href="settings.html" class="pill-secondary" style="text-decoration: none;">⚙️ Settings</a>
+      <button id="bugReportBtn" class="pill-secondary">🐛 Report bug</button>
     </div>
   </header>
 
@@ -863,6 +1104,75 @@
     </div>
   </main>
 
+  <!-- Modals -->
+  <!-- Save Menu Modal -->
+  <div id="saveMenuModal" class="modal-overlay">
+    <div class="save-menu-modal">
+      <div class="modal-header">
+        <h2>💾 Save Options</h2>
+        <button id="closeSaveMenuBtn" class="modal-close">Close</button>
+      </div>
+      <div class="save-menu-content">
+        <!-- Content will be populated by saveMenu.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Quote Builder Modal -->
+  <div id="quoteBuilderModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>💰 Quote Builder</h2>
+        <button id="closeQuoteBuilderBtn" class="modal-close">Close</button>
+      </div>
+      <div id="quoteBuilderContent">
+        <!-- Content will be populated by quoteBuilder.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Bug Report Modal -->
+  <div id="bugReportModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🐛 Report Bug</h2>
+        <button id="closeBugReportBtn" class="modal-close">Close</button>
+      </div>
+      <div id="bugReportContent">
+        <!-- Content will be populated by bugReport.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Prompt Modal -->
+  <div id="sessionNameModal" class="modal-overlay">
+    <div class="session-prompt-modal">
+      <h2>Start New Session</h2>
+      <input type="text" id="sessionNameInput" placeholder="Enter session name (e.g., Smith_Survey)">
+      <div class="button-group">
+        <button class="pill-secondary" id="cancelSessionBtn">Cancel</button>
+        <button class="btn btn-success" id="confirmSessionBtn">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- jsPDF library for quote PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- Depot-voice-notes modules -->
+  <script type="module" src="./js/appState.js"></script>
+  <script type="module" src="./js/pricebook.js"></script>
+  <script type="module" src="./js/schema.js"></script>
+  <script type="module" src="./js/csvExport.js"></script>
+  <script type="module" src="./js/quotePDF.js"></script>
+  <script type="module" src="./js/packSelector.js"></script>
+  <script type="module" src="./js/quoteBuilder.js"></script>
+  <script type="module" src="./js/bugReport.js"></script>
+  <script type="module" src="./js/saveMenu.js"></script>
+  <script type="module" src="./js/uiEnhancements.js"></script>
+  <script type="module" src="./js/mainIntegration.js"></script>
+
+  <!-- Main application -->
   <script src="js/main.js" type="module"></script>
 </body>
 </html>

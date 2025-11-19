@@ -173,6 +173,73 @@ Each recommendation card shows:
 - **Transcript Export**: Plain text for records
 - **Photo Export**: All images with markup
 
+### 9. Quote Builder with Pricebook Integration ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **Interactive quote creation** with customer details
+- **Pricebook search** across 12+ product categories:
+  - Combi boilers (NG & LPG)
+  - System boilers and heat pumps
+  - Controls and thermostats
+  - Radiators and valves
+  - Flues (Worcester and others)
+  - Core installation packs
+- **Multi-quote support** - create multiple quote variations
+- **Real-time calculations** with subtotal, VAT, and total
+- **Item management** - adjust quantities, swap items, add manual entries
+- **PDF quote generation** with professional formatting
+- **Parts catalog** (parts.catalog.json) with complete pricing data
+
+### 10. Enhanced Save System ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **Unified save menu** with multiple format options:
+  - **JSON** - Complete session data with all metadata
+  - **CSV** - Spreadsheet-compatible format
+  - **TXT** - Plain text for easy reading
+- **Selective export** - choose what to save:
+  - Full session (transcript + notes + checklist + audio)
+  - Depot notes (structured sections)
+  - AI notes (enhanced summaries)
+  - Transcript only
+- **Audio export options**:
+  - WAV format (high quality)
+  - WebM/MP4 (original recording format)
+- **Session management**:
+  - Save current session
+  - Load previous sessions
+  - Duplicate sessions for variations
+  - Session naming for organization
+
+### 11. Bug Reporting System ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **Integrated bug reporting** accessible from toolbar
+- **Automatic diagnostic data collection**:
+  - Browser information
+  - Error logs (last 20 entries)
+  - Application state
+  - Performance metrics
+- **Privacy-focused** - sensitive data redacted
+- **Easy submission** - one-click bug reports
+
+### 12. Advanced Session Management ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **Session naming** - organize surveys by customer/property
+- **Session display** - active session shown in header
+- **New session workflow** - clean slate for each job
+- **Session duplication** - create variants quickly
+- **Load/resume** - continue previous work
+
+### 13. Import/Export Features ⭐ NEW
+**Integrated from: Depot-voice-notes**
+
+- **Audio file import** - load existing recordings
+- **JSON import** - restore complete sessions
+- **CSV export** - for spreadsheet analysis
+- **Batch operations** - export multiple items at once
+
 ## 📊 Real-World Examples
 
 ### Example 1: Cold Radiators Discussion
@@ -568,10 +635,14 @@ This means:
 - Email delivery of PDFs
 
 **Roadmap priorities:**
-1. Cloud AI transcription (higher accuracy)
-2. Quote builder from Depot-voice-notes
-3. Clearance checking from Clearance-genie
-4. Mobile-responsive improvements
+1. ✅ Quote builder from Depot-voice-notes (COMPLETED)
+2. ✅ Enhanced save/export system (COMPLETED)
+3. ✅ Bug reporting system (COMPLETED)
+4. ✅ Session management (COMPLETED)
+5. Cloud AI transcription optimization (higher accuracy)
+6. Clearance checking from Clearance-genie
+7. Mobile-responsive improvements
+8. Email delivery of PDFs
 
 ## 🤝 Credits & Sources
 
