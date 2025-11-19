@@ -16,6 +16,29 @@ class VoiceNotes2App {
     this.documentGenerator = new DocumentGenerator();
     this.jobExporter = new JobExporter();
 
+    // Depot-voice-notes section schema (14 sections)
+    this.sectionSchema = [
+      { name: 'Needs', order: 1 },
+      { name: 'Working at heights', order: 2 },
+      { name: 'System characteristics', order: 3 },
+      { name: 'Components that require assistance', order: 4 },
+      { name: 'Restrictions to work', order: 5 },
+      { name: 'External hazards', order: 6 },
+      { name: 'Delivery notes', order: 7 },
+      { name: 'Office notes', order: 8 },
+      { name: 'New boiler and controls', order: 9 },
+      { name: 'Flue', order: 10 },
+      { name: 'Pipe work', order: 11 },
+      { name: 'Disruption', order: 12 },
+      { name: 'Customer actions', order: 13 },
+      { name: 'Future plans', order: 14 }
+    ];
+
+    this.workerUrl = 'https://depot-voice-notes.martinbibb.workers.dev';
+    this.processingTranscript = false;
+    this.transcriptDebounceTimer = null;
+    this.lastProcessedTranscript = '';
+
     this.state = {
       currentJob: {
         name: '',
@@ -30,7 +53,6 @@ class VoiceNotes2App {
           lastModified: new Date().toISOString()
         }
       },
-      currentSection: 'customer-info',
       isRecording: false,
       isPaused: false
     };
@@ -71,7 +93,6 @@ class VoiceNotes2App {
     const startBtn = document.getElementById('start-recording');
     const pauseBtn = document.getElementById('pause-recording');
     const stopBtn = document.getElementById('stop-recording');
-    const sectionSelect = document.getElementById('current-section');
     const transcriptArea = document.getElementById('transcript');
     const statusBadge = document.getElementById('status-badge');
 
@@ -126,10 +147,6 @@ class VoiceNotes2App {
       this.saveToLocalStorage();
     });
 
-    sectionSelect.addEventListener('change', (e) => {
-      this.state.currentSection = e.target.value;
-    });
-
     // Listen for transcript updates from voice recorder
     this.voiceRecorder.on('transcript', (text) => {
       transcriptArea.value = text;
@@ -139,6 +156,22 @@ class VoiceNotes2App {
 
     this.voiceRecorder.on('audio', (blob) => {
       this.state.currentJob.audioBlobs.push(blob);
+    });
+
+    // Process Now button
+    const processNowBtn = document.getElementById('process-now-btn');
+    processNowBtn.addEventListener('click', () => {
+      const transcript = transcriptArea.value;
+      if (transcript && transcript.length > 10) {
+        // Clear debounce timer and process immediately
+        if (this.transcriptDebounceTimer) {
+          clearTimeout(this.transcriptDebounceTimer);
+        }
+        this.lastProcessedTranscript = ''; // Force reprocessing
+        this.processTranscriptWithAI(transcript);
+      } else {
+        alert('Please record some voice notes first before processing.');
+      }
     });
   }
 
@@ -305,51 +338,144 @@ class VoiceNotes2App {
     markupTools.style.display = 'flex';
   }
 
-  updateSections(transcript) {
-    // Parse transcript into sections based on current section
-    const section = this.state.currentSection;
-
-    if (!this.state.currentJob.sections[section]) {
-      this.state.currentJob.sections[section] = {
-        name: this.getSectionName(section),
-        content: '',
-        timestamp: new Date().toISOString()
-      };
+  async updateSections(transcript) {
+    // AI-powered section auto-population using Cloudflare Worker
+    if (!transcript || transcript.length < 10) {
+      return;
     }
 
-    this.state.currentJob.sections[section].content = transcript;
-    this.renderSections();
+    // Debounce: wait for user to stop speaking
+    if (this.transcriptDebounceTimer) {
+      clearTimeout(this.transcriptDebounceTimer);
+    }
+
+    this.transcriptDebounceTimer = setTimeout(() => {
+      this.processTranscriptWithAI(transcript);
+    }, 3000); // Process 3 seconds after last transcript update
   }
 
-  getSectionName(sectionId) {
-    const names = {
-      'customer-info': 'Customer Information',
-      'site-survey': 'Site Survey',
-      'system-details': 'System Details',
-      'measurements': 'Measurements',
-      'requirements': 'Customer Requirements',
-      'safety-notes': 'Safety Notes',
-      'recommendations': 'Recommendations',
-      'next-steps': 'Next Steps'
-    };
-    return names[sectionId] || sectionId;
+  async processTranscriptWithAI(transcript) {
+    // Skip if already processing or transcript hasn't changed significantly
+    if (this.processingTranscript) {
+      return;
+    }
+
+    const transcriptLength = transcript.length;
+    const lastLength = this.lastProcessedTranscript.length;
+
+    // Only process if transcript has grown by at least 50 characters
+    if (transcriptLength - lastLength < 50 && this.lastProcessedTranscript.length > 0) {
+      return;
+    }
+
+    this.processingTranscript = true;
+    this.lastProcessedTranscript = transcript;
+
+    // Show processing indicator
+    const sectionsList = document.getElementById('sections-list');
+    const originalContent = sectionsList.innerHTML;
+    if (Object.keys(this.state.currentJob.sections).length === 0) {
+      sectionsList.innerHTML = '<p style="color: var(--primary); text-align: center;">🤖 AI is processing your notes...</p>';
+    }
+
+    try {
+      // Get already captured sections
+      const alreadyCaptured = Object.values(this.state.currentJob.sections).map(s => ({
+        section: s.name,
+        plainText: s.content
+      }));
+
+      // Call Cloudflare Worker
+      const response = await fetch(`${this.workerUrl}/text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          transcript: transcript,
+          expectedSections: this.sectionSchema.map(s => s.name),
+          alreadyCaptured: alreadyCaptured,
+          depotSections: this.sectionSchema
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Worker responded with ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Update sections from AI response
+      if (data.sections && Array.isArray(data.sections)) {
+        data.sections.forEach(section => {
+          const sectionName = section.section || section.name;
+          if (sectionName) {
+            this.state.currentJob.sections[sectionName] = {
+              name: sectionName,
+              content: section.plainText || section.content || '',
+              naturalLanguage: section.naturalLanguage || '',
+              timestamp: new Date().toISOString()
+            };
+          }
+        });
+
+        this.renderSections();
+      }
+    } catch (error) {
+      console.error('Failed to process transcript with AI:', error);
+      // Fallback: just update a general "Notes" section
+      this.state.currentJob.sections['Notes'] = {
+        name: 'Notes',
+        content: transcript,
+        timestamp: new Date().toISOString()
+      };
+      this.renderSections();
+    } finally {
+      this.processingTranscript = false;
+    }
   }
 
   renderSections() {
     const sectionsList = document.getElementById('sections-list');
-    const sections = Object.values(this.state.currentJob.sections);
+
+    // Sort sections by the schema order
+    const sectionOrder = {};
+    this.sectionSchema.forEach(s => {
+      sectionOrder[s.name] = s.order;
+    });
+
+    const sections = Object.values(this.state.currentJob.sections).sort((a, b) => {
+      const orderA = sectionOrder[a.name] || 999;
+      const orderB = sectionOrder[b.name] || 999;
+      return orderA - orderB;
+    });
 
     if (sections.length === 0) {
       sectionsList.innerHTML = '<p style="color: var(--muted); text-align: center;">No sections captured yet. Start recording to begin.</p>';
       return;
     }
 
-    sectionsList.innerHTML = sections.map(section => `
-      <div class="section-item">
-        <h4>${section.name}</h4>
-        <p>${section.content || '<em>No content yet</em>'}</p>
-      </div>
-    `).join('');
+    sectionsList.innerHTML = sections.map(section => {
+      const hasContent = section.content && section.content.trim().length > 0;
+      const hasNaturalLanguage = section.naturalLanguage && section.naturalLanguage.trim().length > 0;
+
+      return `
+        <div class="section-item">
+          <h4>${section.name}</h4>
+          ${hasContent ? `
+            <div class="section-content">
+              <pre style="white-space: pre-wrap; font-family: inherit; margin: 0;">${section.content}</pre>
+            </div>
+          ` : '<p style="color: var(--muted); font-style: italic;">No content yet</p>'}
+          ${hasNaturalLanguage ? `
+            <div class="section-natural-language" style="margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 3px solid var(--primary);">
+              <strong style="color: var(--primary); font-size: 0.9em;">AI Summary:</strong>
+              <p style="margin: 8px 0 0 0;">${section.naturalLanguage}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
   }
 
   updatePhotoGallery() {
