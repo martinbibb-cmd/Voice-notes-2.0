@@ -27,6 +27,13 @@ export default class PhotoMarkup {
     this.currentColor = this.colors.red;
     this.lineWidth = 3;
 
+    // Zoom and pan properties
+    this.scale = 1;
+    this.panX = 0;
+    this.panY = 0;
+    this.minScale = 0.1;
+    this.maxScale = 5;
+
     this.setupCanvas();
   }
 
@@ -317,5 +324,48 @@ export default class PhotoMarkup {
       this.elements.pop();
       this.redrawCanvas();
     }
+  }
+
+  // Zoom controls
+  zoomIn() {
+    this.scale = Math.min(this.scale * 1.2, this.maxScale);
+    this.applyTransform();
+  }
+
+  zoomOut() {
+    this.scale = Math.max(this.scale / 1.2, this.minScale);
+    this.applyTransform();
+  }
+
+  zoomReset() {
+    this.scale = 1;
+    this.panX = 0;
+    this.panY = 0;
+    this.applyTransform();
+  }
+
+  // Pan controls
+  panUp() {
+    this.panY += 50;
+    this.applyTransform();
+  }
+
+  panDown() {
+    this.panY -= 50;
+    this.applyTransform();
+  }
+
+  panLeft() {
+    this.panX += 50;
+    this.applyTransform();
+  }
+
+  panRight() {
+    this.panX -= 50;
+    this.applyTransform();
+  }
+
+  applyTransform() {
+    this.canvas.style.transform = `scale(${this.scale}) translate(${this.panX}px, ${this.panY}px)`;
   }
 }

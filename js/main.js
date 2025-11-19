@@ -223,6 +223,40 @@ class VoiceNotes2App {
       }
     });
 
+    document.getElementById('undo-markup').addEventListener('click', () => {
+      this.photoMarkup.undo();
+    });
+
+    // Zoom controls
+    document.getElementById('zoom-in').addEventListener('click', () => {
+      this.photoMarkup.zoomIn();
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+      this.photoMarkup.zoomOut();
+    });
+
+    document.getElementById('zoom-reset').addEventListener('click', () => {
+      this.photoMarkup.zoomReset();
+    });
+
+    // Pan controls
+    document.getElementById('pan-up').addEventListener('click', () => {
+      this.photoMarkup.panUp();
+    });
+
+    document.getElementById('pan-down').addEventListener('click', () => {
+      this.photoMarkup.panDown();
+    });
+
+    document.getElementById('pan-left').addEventListener('click', () => {
+      this.photoMarkup.panLeft();
+    });
+
+    document.getElementById('pan-right').addEventListener('click', () => {
+      this.photoMarkup.panRight();
+    });
+
     document.getElementById('save-marked-photo').addEventListener('click', () => {
       const annotation = photoAnnotation.value;
       const markedPhoto = this.photoMarkup.export();
@@ -279,6 +313,50 @@ class VoiceNotes2App {
   }
 
   setupExport() {
+    // Load job functionality
+    const loadJsonBtn = document.getElementById('load-json-job');
+    const loadAudioBtn = document.getElementById('load-audio-file');
+    const jsonJobInput = document.getElementById('json-job-input');
+    const audioFileInput = document.getElementById('audio-file-input');
+
+    loadJsonBtn.addEventListener('click', () => {
+      jsonJobInput.click();
+    });
+
+    loadAudioBtn.addEventListener('click', () => {
+      audioFileInput.click();
+    });
+
+    jsonJobInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          const jobData = await this.jobExporter.importFromJSON(file);
+          this.loadJobData(jobData);
+          alert('Job loaded successfully!');
+        } catch (error) {
+          console.error('Failed to load JSON job:', error);
+          alert('Failed to load job. Please check the file format.');
+        }
+      }
+    });
+
+    audioFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        try {
+          const audioData = await this.jobExporter.importAudioFile(file);
+          this.state.currentJob.audioBlobs.push(audioData.blob);
+          alert(`Audio file "${audioData.filename}" loaded! You can now process it for transcript generation.`);
+          // TODO: Add audio processing/transcription functionality
+        } catch (error) {
+          console.error('Failed to load audio file:', error);
+          alert('Failed to load audio file.');
+        }
+      }
+    });
+
+    // Export functionality
     document.getElementById('export-customer-pdf').addEventListener('click', () => {
       this.documentGenerator.generateCustomerPDF(this.state.currentJob);
     });
@@ -293,6 +371,10 @@ class VoiceNotes2App {
 
     document.getElementById('export-all-photos').addEventListener('click', () => {
       this.exportPhotos();
+    });
+
+    document.getElementById('export-json').addEventListener('click', () => {
+      this.jobExporter.exportToJSON(this.state.currentJob);
     });
 
     document.getElementById('preview-customer-doc').addEventListener('click', () => {
@@ -655,6 +737,51 @@ class VoiceNotes2App {
       a.download = `photo_${index + 1}.png`;
       a.click();
     });
+  }
+
+  loadJobData(jobData) {
+    // Load job data into the current state
+    this.state.currentJob = {
+      ...jobData,
+      metadata: {
+        ...jobData.metadata,
+        lastModified: new Date().toISOString()
+      }
+    };
+
+    // Update transcript if present
+    if (jobData.transcript) {
+      this.state.transcript = jobData.transcript;
+      document.getElementById('transcript').value = jobData.transcript;
+    }
+
+    // Update job name if present
+    if (jobData.name) {
+      document.getElementById('job-name').value = jobData.name;
+    }
+
+    // Update customer name if present
+    if (jobData.customer) {
+      document.getElementById('customer-name').value = jobData.customer;
+    }
+
+    // Update sections display
+    if (jobData.sections) {
+      this.updateSectionsDisplay();
+    }
+
+    // Update photo gallery
+    if (jobData.photos && jobData.photos.length > 0) {
+      this.updatePhotoGallery();
+    }
+
+    // Update recommendations display
+    if (jobData.recommendations && jobData.recommendations.length > 0) {
+      this.displayRecommendations(jobData.recommendations);
+    }
+
+    // Update export summary
+    this.updateExportSummary();
   }
 
   startAutoSave() {

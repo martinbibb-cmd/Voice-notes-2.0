@@ -237,6 +237,31 @@ export default class JobExporter {
     });
   }
 
+  async importAudioFile(file) {
+    // Import audio file for processing
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const audioBlob = new Blob([e.target.result], { type: file.type });
+          resolve({
+            blob: audioBlob,
+            filename: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: new Date(file.lastModified)
+          });
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      reader.onerror = reject;
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   generateJobSummary(jobData) {
     return `
 Job Summary

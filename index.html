@@ -260,10 +260,11 @@
       position: relative;
       border: 2px solid var(--border);
       border-radius: var(--radius);
-      overflow: hidden;
+      overflow: auto;
       background: #f1f5f9;
       display: none;
       margin: 20px 0;
+      max-height: 600px;
     }
 
     #canvas-container.active {
@@ -272,8 +273,9 @@
 
     canvas {
       display: block;
-      max-width: 100%;
-      height: auto;
+      cursor: crosshair;
+      transform-origin: top left;
+      transition: transform 0.2s ease;
     }
 
     .photo-grid {
@@ -694,13 +696,37 @@
         </div>
 
         <div class="toolbar" id="markup-tools" style="display: none;">
-          <button class="btn btn-secondary" data-tool="point">● Point</button>
-          <button class="btn btn-secondary" data-tool="rectangle">▭ Rectangle</button>
-          <button class="btn btn-secondary" data-tool="circle">○ Circle</button>
-          <button class="btn btn-secondary" data-tool="text">T Text</button>
-          <button class="btn btn-secondary" data-tool="arrow">→ Arrow</button>
-          <button class="btn btn-danger" id="clear-markup">Clear All</button>
-          <button class="btn btn-success" id="save-marked-photo">Save Marked Photo</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; width: 100%;">
+            <div style="display: flex; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
+              <strong style="font-size: 0.85rem; color: var(--muted);">Tools:</strong>
+              <button class="btn btn-secondary" data-tool="point">● Point</button>
+              <button class="btn btn-secondary" data-tool="rectangle">▭ Rectangle</button>
+              <button class="btn btn-secondary" data-tool="circle">○ Circle</button>
+              <button class="btn btn-secondary" data-tool="text">T Text</button>
+              <button class="btn btn-secondary" data-tool="arrow">→ Arrow</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
+              <strong style="font-size: 0.85rem; color: var(--muted);">Zoom:</strong>
+              <button class="btn btn-secondary" id="zoom-out">−</button>
+              <button class="btn btn-secondary" id="zoom-reset">1:1</button>
+              <button class="btn btn-secondary" id="zoom-in">+</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
+              <strong style="font-size: 0.85rem; color: var(--muted);">Pan:</strong>
+              <button class="btn btn-secondary" id="pan-up">↑</button>
+              <button class="btn btn-secondary" id="pan-down">↓</button>
+              <button class="btn btn-secondary" id="pan-left">←</button>
+              <button class="btn btn-secondary" id="pan-right">→</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
+              <button class="btn btn-secondary" id="undo-markup">↶ Undo</button>
+              <button class="btn btn-danger" id="clear-markup">Clear All</button>
+              <button class="btn btn-success" id="save-marked-photo">Save Marked Photo</button>
+            </div>
+          </div>
         </div>
 
         <div class="form-group" style="margin-top: 20px;">
@@ -769,6 +795,23 @@
     <!-- EXPORT TAB -->
     <div class="tab-content" id="export">
       <div class="card">
+        <h2>Load Job</h2>
+        <p style="color: var(--muted); margin-bottom: 16px;">
+          Import a previously saved job or load audio files for processing.
+        </p>
+        <div class="toolbar">
+          <button class="btn btn-secondary" id="load-json-job">
+            📂 Load JSON Job
+          </button>
+          <button class="btn btn-secondary" id="load-audio-file">
+            🎵 Load Audio File
+          </button>
+          <input type="file" id="json-job-input" accept=".json" style="display: none;">
+          <input type="file" id="audio-file-input" accept="audio/*,.webm,.mp3,.wav,.m4a" style="display: none;">
+        </div>
+      </div>
+
+      <div class="card">
         <h2>Job Summary</h2>
         <div class="form-group">
           <label for="job-name">Job Name:</label>
@@ -796,6 +839,9 @@
           </button>
           <button class="btn" id="export-all-photos">
             All Photos (ZIP)
+          </button>
+          <button class="btn" id="export-json">
+            Export as JSON
           </button>
         </div>
       </div>
