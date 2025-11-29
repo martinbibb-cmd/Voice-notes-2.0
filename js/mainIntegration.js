@@ -13,6 +13,21 @@ import {
   resetSessionState
 } from './appState.js';
 
+// Constants for word-to-number conversion
+const WORD_TO_NUMBER = {
+  one: '1', two: '2', three: '3', four: '4',
+  five: '5', six: '6', seven: '7', eight: '8'
+};
+
+// Field ID mappings for DOM synchronization
+const FIELD_ID_MAP = {
+  bedrooms: 'surveyBedrooms',
+  bathrooms: 'surveyBathrooms'
+};
+
+// Store observer reference for cleanup
+let transcriptObserver = null;
+
 // Wait for both main.js and uiEnhancements.js to load
 function initIntegration() {
   const ui = window.uiEnhancements;
@@ -176,8 +191,13 @@ function initTranscriptListener() {
     }, 1000);
   });
 
+  // Cleanup any existing observer
+  if (transcriptObserver) {
+    transcriptObserver.disconnect();
+  }
+
   // Also use MutationObserver in case transcript is updated programmatically
-  const observer = new MutationObserver(() => {
+  transcriptObserver = new MutationObserver(() => {
     const text = transcriptArea.value;
     if (text && text !== sessionState.transcript.raw) {
       if (debounceTimer) {
@@ -189,7 +209,7 @@ function initTranscriptListener() {
     }
   });
 
-  observer.observe(transcriptArea, { attributes: true, characterData: true, subtree: true });
+  transcriptObserver.observe(transcriptArea, { attributes: true, characterData: true, subtree: true });
 }
 
 /**
@@ -214,30 +234,23 @@ function autoExtractFromTranscript(text) {
   if (!text || typeof text !== 'string') return;
   const lower = text.toLowerCase();
 
-  // Property type
-  if (lower.includes('detached')) {
-    if (!lower.includes('semi-detached') && !lower.includes('semi detached')) {
-      updateFormField('propertyType', 'detached');
-      syncFormFieldToDOM('propertyType', 'detached');
-    }
-  }
+  // Property type - check specific terms first before broader terms
   if (lower.includes('semi-detached') || lower.includes('semi detached')) {
     updateFormField('propertyType', 'semi');
     syncFormFieldToDOM('propertyType', 'semi');
-  }
-  if (lower.includes('mid-terrace') || lower.includes('mid terrace')) {
+  } else if (lower.includes('mid-terrace') || lower.includes('mid terrace')) {
     updateFormField('propertyType', 'mid-terrace');
     syncFormFieldToDOM('propertyType', 'mid-terrace');
-  }
-  if (lower.includes('end-terrace') || lower.includes('end terrace')) {
+  } else if (lower.includes('end-terrace') || lower.includes('end terrace')) {
     updateFormField('propertyType', 'end-terrace');
     syncFormFieldToDOM('propertyType', 'end-terrace');
-  }
-  if (lower.includes('flat') || lower.includes('apartment')) {
+  } else if (lower.includes('detached')) {
+    updateFormField('propertyType', 'detached');
+    syncFormFieldToDOM('propertyType', 'detached');
+  } else if (lower.includes('flat') || lower.includes('apartment')) {
     updateFormField('propertyType', 'flat');
     syncFormFieldToDOM('propertyType', 'flat');
-  }
-  if (lower.includes('bungalow')) {
+  } else if (lower.includes('bungalow')) {
     updateFormField('propertyType', 'bungalow');
     syncFormFieldToDOM('propertyType', 'bungalow');
   }
@@ -248,11 +261,10 @@ function autoExtractFromTranscript(text) {
     updateFormField('bedrooms', bedMatch[1]);
     syncFormFieldToDOM('bedrooms', bedMatch[1]);
   }
-  // Also check for word numbers
+  // Also check for word numbers using the constant mapping
   const wordBedMatch = lower.match(/(one|two|three|four|five|six|seven|eight)\s*bed(room)?s?/);
   if (wordBedMatch) {
-    const wordToNum = { one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8' };
-    const numVal = wordToNum[wordBedMatch[1]];
+    const numVal = WORD_TO_NUMBER[wordBedMatch[1]];
     if (numVal) {
       updateFormField('bedrooms', numVal);
       syncFormFieldToDOM('bedrooms', numVal);
@@ -282,7 +294,7 @@ function autoExtractFromTranscript(text) {
   if (lower.includes('regular boiler') || lower.includes('heat only') || lower.includes('conventional boiler')) {
     updateFormField('currentSystemType', 'regular');
     syncFormFieldToDOM('currentSystemType', 'regular');
-  } else if (lower.includes('combi boiler') || lower.includes('combination boiler') || lower.includes('combi ')) {
+  } else if (lower.includes('combi boiler') || lower.includes('combination boiler') || /\bcombi\b/.test(lower)) {
     updateFormField('currentSystemType', 'combi');
     syncFormFieldToDOM('currentSystemType', 'combi');
   } else if (lower.includes('system boiler')) {
@@ -358,10 +370,8 @@ function autoExtractFromTranscript(text) {
  * Sync a form field value to the DOM element
  */
 function syncFormFieldToDOM(name, value) {
-  // Handle different field IDs based on name
-  let fieldId = name;
-  if (name === 'bedrooms') fieldId = 'surveyBedrooms';
-  if (name === 'bathrooms') fieldId = 'surveyBathrooms';
+  // Use the field ID mapping for fields with different IDs
+  const fieldId = FIELD_ID_MAP[name] || name;
 
   const field = document.getElementById(fieldId) || document.querySelector(`#survey-form [name="${name}"]`);
   if (!field) return;
