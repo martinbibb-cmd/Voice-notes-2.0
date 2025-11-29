@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Voice Notes 2.0 - Professional Survey & Recommendations</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="./survey/survey-ui.css" />
   <style>
     :root {
       --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -899,6 +900,7 @@
 
   <nav class="tabs">
     <button class="tab active" data-tab="voice">Voice Notes</button>
+    <button class="tab" data-tab="survey">Survey</button>
     <button class="tab" data-tab="photos">Photos & Markup</button>
     <button class="tab" data-tab="recommendations">Recommendations</button>
     <button class="tab" data-tab="export">Export Job</button>
@@ -1203,6 +1205,79 @@
       </section>
     </div>
 
+    <!-- SURVEY TAB (Notes-elite style) -->
+    <div class="tab-content" id="survey">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="margin: 0 0 6px 0;">📋 Property Survey</h2>
+            <p style="margin: 0; color: var(--muted); font-size: 0.9rem;">
+              Complete the survey using the tile interface below. Selections auto-update the depot notes.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button id="sync-survey-voice-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">
+              🔄 Sync from Voice
+            </button>
+            <button id="clear-survey-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem; background: var(--danger);">
+              🗑️ Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Notes-elite style survey container -->
+        <div id="survey-container"></div>
+
+        <!-- Quick summary panel -->
+        <div id="survey-quick-summary" class="card" style="margin-top: 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08)); border-left: 4px solid var(--accent);">
+          <h3 style="margin: 0 0 12px 0; color: var(--accent);">📝 Survey Summary</h3>
+          <div id="survey-summary-content" style="color: var(--muted); font-style: italic;">
+            Start selecting tiles above to see a summary of your survey...
+          </div>
+        </div>
+      </div>
+
+      <!-- Traditional form fallback (collapsible) -->
+      <details class="card" style="margin-top: 20px;">
+        <summary style="cursor: pointer; font-weight: 600; color: var(--accent); padding: 8px 0;">
+          📝 Traditional Form View (fallback)
+        </summary>
+        <div style="padding-top: 16px;">
+          <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 16px;">
+            Use this form if you prefer traditional dropdowns and inputs instead of the tile interface.
+          </p>
+          <form id="survey-form-fallback">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label for="propertyType2">Property type</label>
+                <select id="propertyType2" name="propertyType">
+                  <option value="">Select...</option>
+                  <option value="detached">Detached</option>
+                  <option value="semi">Semi-detached</option>
+                  <option value="mid-terrace">Mid-terrace</option>
+                  <option value="end-terrace">End-terrace</option>
+                  <option value="flat">Flat</option>
+                  <option value="bungalow">Bungalow</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="surveyBedrooms2">Bedrooms</label>
+                <input type="number" id="surveyBedrooms2" name="bedrooms" min="0" step="1" />
+              </div>
+              <div class="form-group">
+                <label for="surveyBathrooms2">Bathrooms</label>
+                <input type="number" id="surveyBathrooms2" name="bathrooms" min="0" step="1" />
+              </div>
+              <div class="form-group">
+                <label for="occupancy2">Number of occupants</label>
+                <input type="number" id="occupancy2" name="occupancy" min="1" step="1" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </details>
+    </div>
+
     <!-- PHOTOS TAB -->
     <div class="tab-content" id="photos">
       <div class="card">
@@ -1455,6 +1530,7 @@
   <script type="module" src="./js/saveMenu.js"></script>
   <script type="module" src="./js/uiEnhancements.js"></script>
   <script type="module" src="./js/mainIntegration.js"></script>
+  <script type="module" src="./js/surveyIntegration.js"></script>
 
   <!-- Main application -->
   <script src="js/main.js" type="module"></script>
