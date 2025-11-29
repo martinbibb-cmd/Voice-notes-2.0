@@ -671,8 +671,10 @@ export default class SurveyUI {
    * Format group name for display
    */
   formatGroupName(group) {
+    // Handle camelCase by adding space before capitals, but not at the start
     return group
       .replace(/([A-Z])/g, ' $1')
+      .replace(/^[\s]/, '') // Remove leading space if present
       .replace(/^./, str => str.toUpperCase())
       .trim();
   }

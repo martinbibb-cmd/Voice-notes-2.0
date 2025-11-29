@@ -18,7 +18,7 @@ export const DEFAULT_SURVEY_SCHEMA = {
       tiles: [
         { id: 'detached', label: 'Detached', icon: '🏡', group: 'propertyType' },
         { id: 'semi', label: 'Semi-detached', icon: '🏘️', group: 'propertyType' },
-        { id: 'mid-terrace', label: 'Mid-terrace', icon: '🏚️', group: 'propertyType' },
+        { id: 'mid-terrace', label: 'Mid-terrace', icon: '🏠', group: 'propertyType' },
         { id: 'end-terrace', label: 'End-terrace', icon: '🏚️', group: 'propertyType' },
         { id: 'flat', label: 'Flat', icon: '🏢', group: 'propertyType' },
         { id: 'bungalow', label: 'Bungalow', icon: '🏠', group: 'propertyType' }

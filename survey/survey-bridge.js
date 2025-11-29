@@ -12,6 +12,20 @@ import {
 
 import { getFormFieldForGroup } from './survey-options-parser.js';
 
+// Constants for hazard toggles
+const HAZARD_TOGGLES = {
+  SCAFFOLDING_REQUIRED: 'scaffoldingRequired',
+  RESTRICTED_ACCESS: 'restrictedAccess',
+  ASBESTOS_PRESENT: 'asbestosPresent'
+};
+
+// Constants for microbore values
+const MICROBORE_VALUES = {
+  YES: 'yes',
+  NO: 'no',
+  UNKNOWN: 'unknown'
+};
+
 /**
  * @typedef {Object} BridgeConfig
  * @property {Function} onStateUpdate - Called when sessionState is updated
@@ -111,7 +125,7 @@ export class SurveyBridge {
     console.log(`[SurveyBridge] Toggle change: ${sectionId}/${toggleId} = ${isSelected}`);
 
     // Special handling for hazards and flags
-    const hazardToggles = ['scaffoldingRequired', 'restrictedAccess', 'asbestosPresent'];
+    const hazardToggles = Object.values(HAZARD_TOGGLES);
     
     if (hazardToggles.includes(toggleId)) {
       const currentHazards = sessionState.form.hazards || [];
@@ -146,12 +160,11 @@ export class SurveyBridge {
       this.multiSelectValues[sectionId] = this.multiSelectValues[sectionId].filter(v => v !== value);
     }
 
-    // Store multi-select values in a way the rest of the system can use
+    // Store multi-select values using updateFormField for consistency
     if (sectionId === 'issues') {
-      // Store as a string list for compatibility
-      sessionState.form._issues = [...this.multiSelectValues[sectionId]];
+      updateFormField('_issues', [...this.multiSelectValues[sectionId]]);
     } else if (sectionId === 'requirements') {
-      sessionState.form._requirements = [...this.multiSelectValues[sectionId]];
+      updateFormField('_requirements', [...this.multiSelectValues[sectionId]]);
     }
   }
 
@@ -197,7 +210,7 @@ export class SurveyBridge {
     }
 
     // Check for scaffolding in hazards
-    if (f.hazards && f.hazards.includes('scaffoldingRequired')) {
+    if (f.hazards && f.hazards.includes(HAZARD_TOGGLES.SCAFFOLDING_REQUIRED)) {
       workingAtHeights += '\n• Scaffolding required;';
     }
 
@@ -215,9 +228,9 @@ export class SurveyBridge {
     if (f.hazards && f.hazards.length > 0) {
       f.hazards.forEach(h => {
         const hazardLabels = {
-          scaffoldingRequired: 'Scaffolding required for access',
-          restrictedAccess: 'Restricted access to property',
-          asbestosPresent: '⚠️ Asbestos present - specialist removal required'
+          [HAZARD_TOGGLES.SCAFFOLDING_REQUIRED]: 'Scaffolding required for access',
+          [HAZARD_TOGGLES.RESTRICTED_ACCESS]: 'Restricted access to property',
+          [HAZARD_TOGGLES.ASBESTOS_PRESENT]: '⚠️ Asbestos present - specialist removal required'
         };
         hazardLines.push(`• ${hazardLabels[h] || h};`);
       });
@@ -232,10 +245,10 @@ export class SurveyBridge {
 
     // Build Restrictions to Work section
     const restrictionsLines = [];
-    if (f.hazards && f.hazards.includes('restrictedAccess')) {
+    if (f.hazards && f.hazards.includes(HAZARD_TOGGLES.RESTRICTED_ACCESS)) {
       restrictionsLines.push('• Restricted access - confirm arrangements;');
     }
-    if (f.microbore === 'yes') {
+    if (f.microbore === MICROBORE_VALUES.YES) {
       restrictionsLines.push('• Microbore pipework present - may need adapters or replacement;');
     }
     const restrictionsToWork = restrictionsLines.join('\n');
@@ -243,7 +256,7 @@ export class SurveyBridge {
     // Build Pipework section
     let pipeworkText = '';
     if (f.microbore) {
-      pipeworkText = `• Microbore: ${f.microbore === 'yes' ? 'Yes - 8-10mm pipes present' : f.microbore === 'no' ? 'No - standard 15mm+ pipes' : 'Unknown'};`;
+      pipeworkText = `• Microbore: ${f.microbore === MICROBORE_VALUES.YES ? 'Yes - 8-10mm pipes present' : f.microbore === MICROBORE_VALUES.NO ? 'No - standard 15mm+ pipes' : 'Unknown'};`;
     }
     if (f.pumpLocation) {
       pipeworkText += `\n• Pump location: ${f.pumpLocation};`;
