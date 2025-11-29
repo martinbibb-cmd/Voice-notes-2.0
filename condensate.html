@@ -381,6 +381,7 @@
         alert('Copied to clipboard!');
       }).catch(err => {
         console.error('Failed to copy:', err);
+        alert('Could not copy to clipboard. Please select and copy the text manually from the text area below.');
       });
     });
 
