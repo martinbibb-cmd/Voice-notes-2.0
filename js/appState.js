@@ -53,10 +53,31 @@ export const sessionState = {
     CustomerActions: '',
     FuturePlans: '',
   },
-  recommendation: null,
-  quote: null,
+  // System recommendation + quoting
+  recommendation: null,    // raw JSON from System-recommendation
+  engineerChoiceId: null,  // id of the option we ACTUALLY recommended (e.g. "option_a")
+
+  quote: null,             // later: gold/silver/bronze detail
   presentation: null,
   customerSummary: '',
+
+  // Manual spec – what manuals this job will require
+  manualSpec: {
+    items: [
+      // Example item shape (see buildManualSpecFromRecommendation)
+      // {
+      //   id: 'wb_4000_25kw_install',
+      //   kind: 'boiler-install',
+      //   brand: 'Worcester Bosch',
+      //   model: 'Greenstar 4000 25kW',
+      //   fuel: 'natural-gas',
+      //   systemType: 'combi',
+      //   language: 'en-GB',
+      //   lookupKey: 'worcester_4000_25kw_install',
+      //   notes: 'Engineer install manual'
+      // }
+    ]
+  },
 };
 
 export function updateSessionMetadata(partial) {
@@ -80,6 +101,14 @@ export function updateSections(partialSections) {
 
 export function setRecommendation(recJson) {
   sessionState.recommendation = recJson;
+}
+
+export function setEngineerChoiceId(optionId) {
+  sessionState.engineerChoiceId = optionId;
+}
+
+export function setManualSpecItems(items) {
+  sessionState.manualSpec.items = items || [];
 }
 
 export function resetSessionState() {
@@ -123,7 +152,9 @@ export function resetSessionState() {
     FuturePlans: '',
   };
   sessionState.recommendation = null;
+  sessionState.engineerChoiceId = null;
   sessionState.quote = null;
   sessionState.presentation = null;
   sessionState.customerSummary = '';
+  sessionState.manualSpec = { items: [] };
 }

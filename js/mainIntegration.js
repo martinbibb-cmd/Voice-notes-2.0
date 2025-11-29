@@ -10,6 +10,8 @@ import {
   updateTranscript,
   updateSections,
   setRecommendation,
+  setEngineerChoiceId,
+  setManualSpecItems,
   resetSessionState
 } from './appState.js';
 
@@ -27,6 +29,16 @@ const FIELD_ID_MAP = {
 
 // Store observer reference for cleanup
 let transcriptObserver = null;
+
+/**
+ * Escape HTML to prevent XSS attacks
+ */
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
 
 // Wait for both main.js and uiEnhancements.js to load
 function initIntegration() {
@@ -122,6 +134,9 @@ function initIntegration() {
 
   // Initialize recommendation JSON loader
   initRecommendationJsonLoader();
+
+  // Initialize engineer choice select
+  initEngineerChoiceSelect();
 
   // Hook into worker responses to update processed transcript and AI notes
   interceptWorkerResponses();
@@ -499,6 +514,7 @@ function initProcessButton() {
 function buildCustomerSummary() {
   const f = sessionState.form;
   const rec = sessionState.recommendation;
+  const engineerChoiceId = sessionState.engineerChoiceId;
 
   const lines = [];
 
@@ -526,19 +542,47 @@ function buildCustomerSummary() {
     lines.push(`Your water pressure is ${f.waterPressure}.`);
   }
 
-  // Recommendation-based text if available
-  if (rec && rec.bestOption && rec.bestOption.title) {
+  let chosenOption = null;
+
+  if (rec && Array.isArray(rec.options)) {
+    // Try to find the engineer's explicitly chosen option
+    if (engineerChoiceId) {
+      chosenOption = rec.options.find(
+        (opt) => opt.id === engineerChoiceId || opt.key === engineerChoiceId || opt.code === engineerChoiceId
+      ) || null;
+    }
+
+    // Fallback to rec.bestOption if no explicit choice
+    if (!chosenOption && rec.bestOption) {
+      chosenOption = rec.bestOption;
+    }
+
+    if (chosenOption && chosenOption.title) {
+      lines.push('');
+      lines.push(`Based on your home and hot water needs, we have recommended: ${chosenOption.title}.`);
+
+      if (Array.isArray(chosenOption.keyBenefits) && chosenOption.keyBenefits.length) {
+        lines.push(`We chose this option because:\n• ${chosenOption.keyBenefits.join('\n• ')}`);
+      }
+    }
+  } else if (rec && rec.bestOption && rec.bestOption.title) {
+    // Backwards compatibility: if no rec.options array, use bestOption directly
     lines.push('');
     lines.push(`Based on your home and hot water needs, the best fit is: ${rec.bestOption.title}.`);
 
     if (Array.isArray(rec.bestOption.keyBenefits) && rec.bestOption.keyBenefits.length) {
       lines.push(`This option was chosen because:\n• ${rec.bestOption.keyBenefits.join('\n• ')}`);
     }
-  } else if (!rec) {
+  }
+
+  if (!rec && !chosenOption) {
     // Fallback if no recommendation JSON yet
     if (f.currentSystemType) {
       lines.push('');
-      lines.push(`Based on your current ${f.currentSystemType} system, we will recommend the most suitable replacement option during your survey.`);
+      lines.push(`We have recommended a like-for-like ${f.currentSystemType} boiler replacement based on your current system and hot water demand.`);
+    } else {
+      lines.push('');
+      lines.push('We have recommended a like-for-like regular boiler replacement based on your current system and hot water demand.');
     }
   }
 
@@ -583,15 +627,179 @@ function onRecommendationJsonLoaded(recJson) {
     setRecommendation(parsed);
     console.log('Recommendation JSON loaded:', parsed);
 
+    // Populate engineer choice dropdown from recommendation options
+    populateEngineerChoiceFromRecommendation();
+
     // Optionally immediately rebuild key sections + summary
     autoBuildSectionsFromState();
     buildCustomerSummary();
+
+    // Build manual spec from recommendation
+    buildManualSpecFromRecommendation();
 
     alert('Recommendation JSON loaded successfully!');
   } catch (err) {
     console.error('Failed to parse recommendation JSON', err);
     alert('Could not read system recommendation JSON – please check the format.');
   }
+}
+
+/**
+ * Initialize the engineer choice select dropdown
+ */
+function initEngineerChoiceSelect() {
+  const selectEl = document.getElementById('engineer-choice-select');
+  if (!selectEl) return;
+
+  selectEl.addEventListener('change', () => {
+    const optionId = selectEl.value || null;
+    setEngineerChoiceId(optionId);
+    // Rebuild summary so it can explicitly mention the chosen option
+    buildCustomerSummary();
+    // Rebuild manual spec for the chosen option
+    buildManualSpecFromRecommendation();
+  });
+}
+
+/**
+ * Populate the engineer choice dropdown from recommendation JSON
+ */
+function populateEngineerChoiceFromRecommendation() {
+  const selectEl = document.getElementById('engineer-choice-select');
+  if (!selectEl) return;
+
+  const rec = sessionState.recommendation;
+  if (!rec || !Array.isArray(rec.options)) return;
+
+  // Clear existing dynamic options (keep the first placeholder)
+  selectEl.querySelectorAll('option[data-rec-option="true"]').forEach(opt => opt.remove());
+
+  rec.options.forEach((opt) => {
+    // Expect each option to have at least id + title
+    const optionId = opt.id || opt.key || opt.code || opt.title;
+    const label = opt.title || optionId;
+    const o = document.createElement('option');
+    o.value = optionId;
+    o.textContent = label;
+    o.dataset.recOption = 'true';
+    selectEl.appendChild(o);
+  });
+
+  // If we already have a choice stored, set it
+  if (sessionState.engineerChoiceId) {
+    selectEl.value = sessionState.engineerChoiceId;
+  }
+}
+
+/**
+ * Build a manual spec from the chosen option in sessionState
+ */
+function buildManualSpecFromRecommendation() {
+  const rec = sessionState.recommendation;
+  if (!rec || !Array.isArray(rec.options)) {
+    setManualSpecItems([]);
+    renderManualSpecToUI();
+    return;
+  }
+
+  const engineerChoiceId = sessionState.engineerChoiceId;
+  let chosenOption = null;
+
+  if (engineerChoiceId) {
+    chosenOption = rec.options.find(
+      (opt) => opt.id === engineerChoiceId || opt.key === engineerChoiceId || opt.code === engineerChoiceId
+    ) || null;
+  }
+
+  // Fallback to bestOption - but try to find the full option in rec.options first
+  if (!chosenOption && rec.bestOption) {
+    const bestOptionId = rec.bestOption.id || rec.bestOption.key || rec.bestOption.code;
+    if (bestOptionId) {
+      chosenOption = rec.options.find(
+        (opt) => opt.id === bestOptionId || opt.key === bestOptionId || opt.code === bestOptionId
+      ) || rec.bestOption;
+    } else {
+      chosenOption = rec.bestOption;
+    }
+  }
+
+  if (!chosenOption) {
+    setManualSpecItems([]);
+    renderManualSpecToUI();
+    return;
+  }
+
+  const items = [];
+
+  // Boiler install manual
+  if (chosenOption.boilerManualKey) {
+    items.push({
+      id: chosenOption.boilerManualKey,
+      kind: 'boiler-install',
+      brand: chosenOption.brand || '',
+      model: chosenOption.model || '',
+      systemType: chosenOption.systemType || '',
+      fuel: chosenOption.fuel || '',
+      lookupKey: chosenOption.boilerManualKey,
+      notes: 'Engineer boiler installation manual'
+    });
+  }
+
+  // User boiler manual
+  if (chosenOption.userManualKey) {
+    items.push({
+      id: chosenOption.userManualKey,
+      kind: 'boiler-user',
+      brand: chosenOption.brand || '',
+      model: chosenOption.model || '',
+      systemType: chosenOption.systemType || '',
+      fuel: chosenOption.fuel || '',
+      lookupKey: chosenOption.userManualKey,
+      notes: 'Customer boiler user guide'
+    });
+  }
+
+  // Controls (e.g. Hive)
+  if (chosenOption.controlsManualKey) {
+    items.push({
+      id: chosenOption.controlsManualKey,
+      kind: 'controls-install',
+      brand: chosenOption.controlsBrand || 'Hive',
+      model: chosenOption.controlsModel || 'Smart thermostat',
+      lookupKey: chosenOption.controlsManualKey,
+      notes: 'Controls installation guide'
+    });
+  }
+
+  // TODO: add cylinder/filter/etc keys as you extend the recommendation JSON
+
+  setManualSpecItems(items);
+  renderManualSpecToUI();
+}
+
+/**
+ * Render the manual spec items to the UI
+ */
+function renderManualSpecToUI() {
+  const listEl = document.getElementById('manual-spec-list');
+  if (!listEl) return;
+
+  const items = sessionState.manualSpec.items || [];
+
+  if (items.length === 0) {
+    listEl.innerHTML = '<li style="color: var(--muted); font-style: italic;">No manuals selected yet. Load a recommendation and choose an option above.</li>';
+    return;
+  }
+
+  listEl.innerHTML = items.map((item) => {
+    const kindLabel = escapeHtml(item.kind ? item.kind.replace(/-/g, ' ') : 'manual');
+    const brandModel = escapeHtml([item.brand, item.model].filter(Boolean).join(' '));
+    const lookupKey = escapeHtml(item.lookupKey || 'no key');
+    return `<li style="padding: 8px 12px; margin-bottom: 8px; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--accent);">
+      <strong style="text-transform: capitalize;">${kindLabel}:</strong> ${brandModel || 'Unknown'} 
+      <span style="color: var(--muted); font-size: 0.85rem;">(${lookupKey})</span>
+    </li>`;
+  }).join('');
 }
 
 // Expose functions globally for use by other modules
@@ -602,7 +810,10 @@ window.sessionStateHelpers = {
   buildCustomerSummary,
   onRecommendationJsonLoaded,
   syncFormFieldToDOM,
-  renderSectionsToUI
+  renderSectionsToUI,
+  populateEngineerChoiceFromRecommendation,
+  buildManualSpecFromRecommendation,
+  renderManualSpecToUI
 };
 
 function interceptWorkerResponses() {
