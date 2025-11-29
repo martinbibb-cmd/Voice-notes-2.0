@@ -990,6 +990,194 @@
           </div>
         </div>
       </div>
+
+      <!-- SURVEY FORM (full-width) -->
+      <section id="survey-section" class="card" style="margin-top: 20px;">
+        <h2>Survey</h2>
+        <form id="survey-form">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="propertyType">Property type</label>
+              <select id="propertyType" name="propertyType">
+                <option value="">Select...</option>
+                <option value="detached">Detached</option>
+                <option value="semi">Semi-detached</option>
+                <option value="mid-terrace">Mid-terrace</option>
+                <option value="end-terrace">End-terrace</option>
+                <option value="flat">Flat</option>
+                <option value="bungalow">Bungalow</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="surveyBedrooms">Bedrooms</label>
+              <input type="number" id="surveyBedrooms" name="bedrooms" min="0" step="1" />
+            </div>
+
+            <div class="form-group">
+              <label for="surveyBathrooms">Bathrooms</label>
+              <input type="number" id="surveyBathrooms" name="bathrooms" min="0" step="1" />
+            </div>
+
+            <div class="form-group">
+              <label for="occupancy">Number of people living there</label>
+              <input type="number" id="occupancy" name="occupancy" min="1" step="1" />
+            </div>
+
+            <div class="form-group">
+              <label for="currentSystemType">Current system</label>
+              <select id="currentSystemType" name="currentSystemType">
+                <option value="">Select...</option>
+                <option value="regular">Regular (heat only + cylinder)</option>
+                <option value="combi">Combi</option>
+                <option value="system">System (sealed + cylinder)</option>
+                <option value="back-boiler">Back boiler</option>
+                <option value="electric">Electric boiler</option>
+                <option value="other">Other / unsure</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="cylinderType">Cylinder type</label>
+              <select id="cylinderType" name="cylinderType">
+                <option value="">Select...</option>
+                <option value="vented">Vented (tank in loft)</option>
+                <option value="unvented">Unvented</option>
+                <option value="none">No cylinder</option>
+                <option value="thermal-store">Thermal store</option>
+                <option value="mixergy">Mixergy</option>
+                <option value="other">Other / unsure</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="waterPressure">Water pressure</label>
+              <select id="waterPressure" name="waterPressure">
+                <option value="">Select...</option>
+                <option value="poor">Poor</option>
+                <option value="adequate">Adequate</option>
+                <option value="good">Good</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="microbore">Microbore pipework</label>
+              <select id="microbore" name="microbore">
+                <option value="">Select...</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="unknown">Unknown</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="flueType">Flue type</label>
+              <select id="flueType" name="flueType">
+                <option value="">Select...</option>
+                <option value="balanced">Balanced flue</option>
+                <option value="open">Open flue</option>
+                <option value="vertical">Vertical flue</option>
+                <option value="asbestos">Asbestos flue</option>
+                <option value="other">Other / unsure</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="loftAccess">Loft access notes</label>
+              <input type="text" id="loftAccess" name="loftAccess" placeholder="e.g., Easy access, ladder needed..." />
+            </div>
+
+            <div class="form-group">
+              <label for="parking">Parking notes</label>
+              <input type="text" id="parking" name="parking" placeholder="e.g., Driveway, street parking..." />
+            </div>
+
+            <div class="form-group">
+              <label for="pumpLocation">Pump location</label>
+              <input type="text" id="pumpLocation" name="pumpLocation" placeholder="e.g., Airing cupboard, loft..." />
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- PROCESS BUTTON -->
+      <div style="text-align: center; margin: 20px 0;">
+        <button id="process-session-btn" class="btn btn-success" style="padding: 16px 32px; font-size: 1.1rem;">
+          🚀 Process Session
+        </button>
+      </div>
+
+      <!-- NOTES OUTPUT (two columns) -->
+      <section id="notes-output" class="card" style="margin-top: 20px;">
+        <h2>Depot Notes Output</h2>
+        <div class="grid grid-2">
+          <div class="notes-column">
+            <h3>Needs</h3>
+            <pre id="section-Needs" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Working at heights</h3>
+            <pre id="section-WorkingAtHeights" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>System characteristics</h3>
+            <pre id="section-SystemCharacteristics" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Components that require assistance</h3>
+            <pre id="section-ComponentsThatRequireAssistance" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Restrictions to work</h3>
+            <pre id="section-RestrictionsToWork" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>External hazards</h3>
+            <pre id="section-ExternalHazards" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Delivery notes</h3>
+            <pre id="section-DeliveryNotes" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+          </div>
+
+          <div class="notes-column">
+            <h3>Office notes</h3>
+            <pre id="section-OfficeNotes" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>New boiler and controls</h3>
+            <pre id="section-NewBoilerAndControls" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Flue</h3>
+            <pre id="section-Flue" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Pipe work</h3>
+            <pre id="section-Pipework" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Disruption</h3>
+            <pre id="section-Disruption" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Customer actions</h3>
+            <pre id="section-CustomerActions" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+
+            <h3>Future plans</h3>
+            <pre id="section-FuturePlans" style="white-space: pre-wrap; background: #f8fafc; padding: 12px; border-radius: 8px; min-height: 60px;"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- CUSTOMER SUMMARY -->
+      <section id="customer-summary-section" class="card" style="margin-top: 20px;">
+        <h2>Customer Summary</h2>
+        <p id="customer-summary-text" style="white-space: pre-wrap; background: linear-gradient(to right, #f0fdf4, white); padding: 16px; border-radius: 8px; border-left: 4px solid var(--success); min-height: 80px; line-height: 1.8;">
+          <span style="color: var(--muted); font-style: italic;">Customer summary will appear here after processing...</span>
+        </p>
+      </section>
+
+      <!-- RECOMMENDATION JSON INPUT -->
+      <section id="recommendation-json-section" class="card" style="margin-top: 20px;">
+        <h2>System Recommendation JSON</h2>
+        <p style="color: var(--muted); margin-bottom: 12px; font-size: 0.9rem;">
+          Paste or load the system recommendation JSON from the recommendation app to enhance the customer summary.
+        </p>
+        <textarea id="recommendation-json-input" placeholder="Paste recommendation JSON here..." style="min-height: 100px;"></textarea>
+        <button id="load-recommendation-json-btn" class="btn btn-secondary" style="margin-top: 12px;">
+          📥 Load Recommendation JSON
+        </button>
+      </section>
     </div>
 
     <!-- PHOTOS TAB -->
