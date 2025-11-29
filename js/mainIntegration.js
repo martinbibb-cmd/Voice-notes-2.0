@@ -30,6 +30,16 @@ const FIELD_ID_MAP = {
 // Store observer reference for cleanup
 let transcriptObserver = null;
 
+/**
+ * Escape HTML to prevent XSS attacks
+ */
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // Wait for both main.js and uiEnhancements.js to load
 function initIntegration() {
   const ui = window.uiEnhancements;
@@ -782,11 +792,12 @@ function renderManualSpecToUI() {
   }
 
   listEl.innerHTML = items.map((item) => {
-    const kindLabel = item.kind ? item.kind.replace(/-/g, ' ') : 'manual';
-    const brandModel = [item.brand, item.model].filter(Boolean).join(' ');
+    const kindLabel = escapeHtml(item.kind ? item.kind.replace(/-/g, ' ') : 'manual');
+    const brandModel = escapeHtml([item.brand, item.model].filter(Boolean).join(' '));
+    const lookupKey = escapeHtml(item.lookupKey || 'no key');
     return `<li style="padding: 8px 12px; margin-bottom: 8px; background: #f8fafc; border-radius: 8px; border-left: 3px solid var(--accent);">
       <strong style="text-transform: capitalize;">${kindLabel}:</strong> ${brandModel || 'Unknown'} 
-      <span style="color: var(--muted); font-size: 0.85rem;">(${item.lookupKey || 'no key'})</span>
+      <span style="color: var(--muted); font-size: 0.85rem;">(${lookupKey})</span>
     </li>`;
   }).join('');
 }
