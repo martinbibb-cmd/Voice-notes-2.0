@@ -26,7 +26,8 @@
       startTime: null,
       timerId: null,
       mediaRecorder: null,
-      chunks: []
+      chunks: [],
+      lastBlob: null
     },
     aiMessages: []
   };
@@ -526,16 +527,27 @@
     realtimeCheckbox.id = "realtime-cleanup";
     realtimeLabel.appendChild(realtimeCheckbox);
     realtimeLabel.appendChild(
-      document.createTextNode(" Enable real-time AI transcript cleanup")
+      document.createTextNode(" Enable real-time AI transcript cleanup (online only when used)")
     );
 
+    const transcribeBtn = document.createElement("button");
+    transcribeBtn.textContent = "Transcribe audio online";
+    transcribeBtn.addEventListener("click", () => {
+      if (!AppState.recording.lastBlob) {
+        alert("No recording available yet. Start and stop a recording first.");
+        return;
+      }
+      transcribeCurrentRecording();
+    });
+
     const reprocessBtn = document.createElement("button");
-    reprocessBtn.textContent = "Reprocess transcript";
+    reprocessBtn.textContent = "Reprocess transcript (online)";
     reprocessBtn.addEventListener("click", () => {
       reprocessTranscript();
     });
 
     controlsDiv.appendChild(realtimeLabel);
+    controlsDiv.appendChild(transcribeBtn);
     controlsDiv.appendChild(reprocessBtn);
 
     transcriptPanel.appendChild(controlsDiv);
@@ -588,15 +600,14 @@
         mediaRecorder.onstop = () => {
           const blob = new Blob(AppState.recording.chunks, { type: "audio/webm" });
           console.log("Audio blob ready. Size:", blob.size);
+          AppState.recording.lastBlob = blob;
 
-          sendAudioForTranscription(blob)
-            .then((text) => {
-              applyTranscriptText(text, "append");
-            })
-            .catch((err) => {
-              console.error("ASR error", err);
-              alert("Sorry, I couldn't transcribe the audio. Check the worker logs.");
-            });
+          // Local-first behaviour:
+          // Just update the transcript box with a friendly note.
+          applyTranscriptText(
+            "[Audio captured locally. Use 'Transcribe audio online' if you want a full transcript.]",
+            "append"
+          );
         };
         mediaRecorder.start();
         AppState.recording.isActive = true;
@@ -699,18 +710,36 @@
       });
   }
 
-  // Keep this name in case other code still calls it:
-  function fakeTranscriptionFromBlob(blob) {
-    // Backwards compatibility: call the real ASR and append the text.
+  function transcribeCurrentRecording() {
+    const blob = AppState.recording.lastBlob;
+    if (!blob) {
+      alert("No recording available to transcribe.");
+      return;
+    }
+
+    // Optional: add a small "working..." note
+    applyTranscriptText("[Transcribing audio online…]", "append");
+
     sendAudioForTranscription(blob)
-      .then((text) => applyTranscriptText(text, "append"))
+      .then((text) => {
+        applyTranscriptText(text, "append");
+      })
       .catch((err) => {
-        console.error("ASR error (fallback)", err);
+        console.error("ASR error", err);
         applyTranscriptText(
-          "[ASR error] Audio captured but not transcribed. See console.",
+          "[ASR error] Audio captured but could not be transcribed. Check worker logs.",
           "append"
         );
       });
+  }
+
+  // Keep this name in case other code still calls it:
+  function fakeTranscriptionFromBlob(blob) {
+    AppState.recording.lastBlob = blob;
+    applyTranscriptText(
+      "[Audio captured locally. Use 'Transcribe audio online' if you want a full transcript.]",
+      "append"
+    );
   }
 
   function reprocessTranscript() {
