@@ -1,6 +1,16 @@
 (function () {
   const timeSlots = ["09:00", "11:00", "13:00", "15:00", "17:00"];
 
+  // ---- API config: voice-notes-2 worker ----
+  // Base URL for your Cloudflare Worker
+  const API_BASE = "https://voice-notes-2.martinbibb.workers.dev";
+
+  // NOTE: if your worker uses different paths, change these three:
+  const AGENT_ENDPOINT = API_BASE + "/agent";                // Q&A / helper
+  const ASR_ENDPOINT = API_BASE + "/transcribe";             // audio → text
+  const CLEANUP_ENDPOINT = API_BASE + "/cleanup-transcript"; // transcript cleanup only
+  // ------------------------------------------
+
   const AppState = {
     currentView: "diary", // diary | survey | settings
     currentDay: new Date(),
@@ -292,7 +302,6 @@
   function closeAppointmentModal() {
     const modal = $("appointment-modal");
     modal.classList.add("hidden");
-    AppState.currentAppointmentId = null;
   }
 
   function saveAppointmentFromModal(startSurveyAfter) {
@@ -315,7 +324,10 @@
       surveyComplete: false
     };
 
-    if (AppState.currentAppointmentId) {
+    let targetId = AppState.currentAppointmentId;
+
+    if (targetId) {
+      // Update existing appointment
       const idx = AppState.appointments.findIndex(
         (a) => a.id === AppState.currentAppointmentId
       );
@@ -326,23 +338,24 @@
         };
       }
     } else {
-      const id = `appt_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      // Create new appointment
+      targetId = `appt_${Date.now()}_${Math.random().toString(16).slice(2)}`;
       AppState.appointments.push({
-        id,
+        id: targetId,
         ...apptData
       });
-      AppState.currentAppointmentId = id;
     }
 
+    AppState.currentAppointmentId = targetId;
     renderTimeSlots();
-    closeAppointmentModal();
 
     if (startSurveyAfter) {
-      const appt = AppState.appointments.find(
-        (a) => a.id === AppState.currentAppointmentId
-      );
+      const appt = AppState.appointments.find((a) => a.id === targetId);
       startSurveyForAppointment(appt);
     }
+
+    // Only close the modal after we've started the survey (if requested)
+    closeAppointmentModal();
   }
 
   function startSurveyForAppointment(appt) {
@@ -574,9 +587,16 @@
         };
         mediaRecorder.onstop = () => {
           const blob = new Blob(AppState.recording.chunks, { type: "audio/webm" });
-          // TODO: send blob to your existing ASR endpoint, update AppState.transcript
           console.log("Audio blob ready. Size:", blob.size);
-          fakeTranscriptionFromBlob(blob);
+
+          sendAudioForTranscription(blob)
+            .then((text) => {
+              applyTranscriptText(text, "append");
+            })
+            .catch((err) => {
+              console.error("ASR error", err);
+              alert("Sorry, I couldn't transcribe the audio. Check the worker logs.");
+            });
         };
         mediaRecorder.start();
         AppState.recording.isActive = true;
@@ -634,23 +654,102 @@
     }
   }
 
-  function fakeTranscriptionFromBlob(blob) {
-    // Stub to show something happens. Replace with real ASR call.
-    AppState.transcript =
-      AppState.transcript +
-      (AppState.transcript ? "\n" : "") +
-      "[Transcript stub] Audio captured, length " +
-      Math.round(blob.size / 1024) +
-      " KB.";
+  function applyTranscriptText(text, mode) {
+    if (!text) return;
+    if (mode === "replace") {
+      AppState.transcript = text;
+    } else {
+      AppState.transcript = AppState.transcript
+        ? AppState.transcript + "\n" + text
+        : text;
+    }
     const box = $("transcript-box");
     if (box) {
       box.textContent = AppState.transcript;
     }
   }
 
+  function sendAudioForTranscription(blob) {
+    // Sends audio to the worker ASR endpoint.
+    // If your worker expects a different payload, adjust this to match.
+    const formData = new FormData();
+    formData.append("audio", blob, "recording.webm");
+    formData.append("source", "pwa-diary-prototype");
+
+    return fetch(ASR_ENDPOINT, {
+      method: "POST",
+      body: formData
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("ASR request failed with " + res.status);
+        return res.json();
+      })
+      .then((data) => {
+        // Try multiple common keys so it works with your existing worker:
+        const text =
+          data.text ||
+          data.transcript ||
+          data.cleanedText ||
+          data.result ||
+          "";
+        if (!text) {
+          throw new Error("ASR response did not contain transcript text");
+        }
+        return text;
+      });
+  }
+
+  // Keep this name in case other code still calls it:
+  function fakeTranscriptionFromBlob(blob) {
+    // Backwards compatibility: call the real ASR and append the text.
+    sendAudioForTranscription(blob)
+      .then((text) => applyTranscriptText(text, "append"))
+      .catch((err) => {
+        console.error("ASR error (fallback)", err);
+        applyTranscriptText(
+          "[ASR error] Audio captured but not transcribed. See console.",
+          "append"
+        );
+      });
+  }
+
   function reprocessTranscript() {
-    // TODO: send AppState.transcript to AI endpoint for cleanup only.
-    alert("Reprocess transcript stub – wire this to your AI cleanup endpoint.");
+    const text = (AppState.transcript || "").trim();
+    if (!text) {
+      alert("No transcript to clean yet.");
+      return;
+    }
+
+    fetch(CLEANUP_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        text,
+        source: "pwa-diary-prototype"
+      })
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Cleanup request failed with " + res.status);
+        return res.json();
+      })
+      .then((data) => {
+        const cleaned =
+          data.text ||
+          data.cleaned ||
+          data.cleanedText ||
+          data.result ||
+          "";
+        if (!cleaned) {
+          throw new Error("Cleanup response did not contain cleaned text");
+        }
+        applyTranscriptText(cleaned, "replace");
+      })
+      .catch((err) => {
+        console.error("Transcript cleanup error", err);
+        alert("Sorry, I couldn't clean up the transcript. Check the worker logs.");
+      });
   }
 
   // ------------- AI panel -------------
@@ -709,12 +808,16 @@
   }
 
   function sendAIRequest(text) {
-    // Stub: call your existing AI API endpoint
     const context = buildAIContext();
-    pushAIMessage("assistant", "Thinking…");
 
-    // Replace URL with your actual endpoint in voice-notes-2.0
-    fetch("/api/agent", {
+    // Add a "Thinking…" placeholder while waiting for the worker response
+    const thinkingIndex = AppState.aiMessages.push({
+      role: "assistant",
+      text: "Thinking…"
+    }) - 1;
+    renderAIMessages();
+
+    fetch(AGENT_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -722,25 +825,36 @@
       body: JSON.stringify({
         message: text,
         context,
-        mode: "explain_only" // hint to backend not to change data
+        mode: "explain-only" // hint to your worker: natural language only, no state changes
       })
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Agent error");
+        if (!res.ok) throw new Error("Agent request failed with " + res.status);
         return res.json();
       })
       .then((data) => {
-        // Expect { reply: "text..." }
-        AppState.aiMessages.pop(); // remove "Thinking…"
-        pushAIMessage("assistant", data.reply || "(No reply text)");
+        const reply =
+          data.reply ||
+          data.text ||
+          data.answer ||
+          "(Agent responded, but no reply text field was found.)";
+
+        // Replace the "Thinking…" entry
+        AppState.aiMessages[thinkingIndex] = {
+          role: "assistant",
+          text: reply
+        };
+        renderAIMessages();
       })
       .catch((err) => {
-        console.error(err);
-        AppState.aiMessages.pop(); // remove "Thinking…"
-        pushAIMessage(
-          "assistant",
-          "Sorry, I couldn't reach the agent. Check the /api/agent endpoint wiring."
-        );
+        console.error("Agent error", err);
+        AppState.aiMessages[thinkingIndex] = {
+          role: "assistant",
+          text:
+            "Sorry, I couldn't reach the agent at the moment. " +
+            "Check the voice-notes-2 worker and its /agent endpoint."
+        };
+        renderAIMessages();
       });
   }
 
