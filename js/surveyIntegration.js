@@ -77,17 +77,39 @@ function initFourTabSurvey() {
   // --- System option selection ---
   const systemCards = Array.from(document.querySelectorAll('.system-option-card'));
   const newSystemTypeInput = document.getElementById('new-system-type');
+  const cylinderSection = document.getElementById('new-system-cylinder-section');
+
+  function updateCylinderVisibility(systemType) {
+    if (!cylinderSection) return;
+    // Cylinder only relevant for system or regular.
+    if (systemType === 'system' || systemType === 'regular') {
+      cylinderSection.classList.remove('hidden');
+    } else {
+      cylinderSection.classList.add('hidden');
+    }
+  }
 
   function selectSystemCard(card) {
+    const systemType = card.dataset.system || '';
     systemCards.forEach(c => c.classList.toggle('selected', c === card));
-    if (newSystemTypeInput && card.dataset.system) {
-      newSystemTypeInput.value = card.dataset.system;
+    if (newSystemTypeInput) {
+      newSystemTypeInput.value = systemType;
     }
+    updateCylinderVisibility(systemType);
   }
 
   systemCards.forEach(card => {
     card.addEventListener('click', () => selectSystemCard(card));
   });
+
+  // If something sets new-system-type on load, respect it:
+  if (newSystemTypeInput && newSystemTypeInput.value) {
+    const initial = systemCards.find(c => c.dataset.system === newSystemTypeInput.value);
+    if (initial) selectSystemCard(initial);
+  } else {
+    // default: no selection, cylinder visible (you'll tap one anyway)
+    updateCylinderVisibility('');
+  }
 
   // --- Sync from voice button (new UI) ---
   const syncBtn = document.getElementById('survey-sync-from-voice');
@@ -115,6 +137,8 @@ function initFourTabSurvey() {
         });
         systemCards.forEach(c => c.classList.remove('selected'));
         if (newSystemTypeInput) newSystemTypeInput.value = '';
+        // Reset cylinder visibility when clearing
+        updateCylinderVisibility('');
         console.log('[SurveyIntegration] All survey fields cleared');
       }
     });

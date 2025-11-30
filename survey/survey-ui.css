@@ -695,3 +695,28 @@
     max-width: 120px;
   }
 }
+
+/* Vertical chip column layout for cleaner mobile display */
+.survey-chip-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.survey-chip-column label {
+  font-weight: normal;
+}
+
+/* Bold label for section headings */
+.bold-label {
+  display: block;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+/* Helper for hiding cylinder section when on combi */
+.hidden {
+  display: none !important;
+}
