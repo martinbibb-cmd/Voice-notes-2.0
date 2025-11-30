@@ -1,6 +1,7 @@
 /**
  * Survey Integration Module
  * Initializes and integrates the Notes-elite style survey UI with Voice-notes-2.0
+ * Now includes 4-tab survey functionality
  */
 
 import { renderSurvey, getSurveyState, setSurveyState, destroySurvey } from '../survey/import-survey.js';
@@ -20,44 +21,124 @@ function initSurvey() {
   const container = document.getElementById('survey-container');
   if (!container) {
     console.warn('[SurveyIntegration] Survey container not found');
-    return;
+  } else {
+    console.log('[SurveyIntegration] Initializing survey...');
+
+    // Render the survey UI
+    surveyInstance = renderSurvey(container, {
+      onStateChange: (state) => {
+        // Update the quick summary when state changes
+        updateQuickSummary(state);
+        
+        // Sync with traditional form if it exists
+        syncToTraditionalForm(state);
+      }
+    });
   }
 
-  console.log('[SurveyIntegration] Initializing survey...');
-
-  // Render the survey UI
-  surveyInstance = renderSurvey(container, {
-    onStateChange: (state) => {
-      // Update the quick summary when state changes
-      updateQuickSummary(state);
-      
-      // Sync with traditional form if it exists
-      syncToTraditionalForm(state);
-    }
-  });
-
-  // Setup event handlers
+  // Setup event handlers for both old and new survey UI
   setupEventHandlers();
+  
+  // Setup 4-tab survey functionality
+  initFourTabSurvey();
 
   console.log('[SurveyIntegration] Survey initialized successfully');
+}
+
+/**
+ * Initialize 4-tab survey UI functionality
+ */
+function initFourTabSurvey() {
+  // --- Tab switching ---
+  const tabButtons = Array.from(document.querySelectorAll('.survey-tab-button'));
+  const tabPanels = Array.from(document.querySelectorAll('.survey-tab-panel'));
+
+  function activateTab(targetId) {
+    tabButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tabTarget === targetId);
+    });
+    tabPanels.forEach(panel => {
+      panel.classList.toggle('active', panel.id === targetId);
+    });
+  }
+
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.tabTarget;
+      if (targetId) activateTab(targetId);
+    });
+  });
+
+  // Ensure first tab is active if nothing else set
+  if (tabButtons.length && !tabButtons.some(b => b.classList.contains('active'))) {
+    activateTab(tabButtons[0].dataset.tabTarget);
+  }
+
+  // --- System option selection ---
+  const systemCards = Array.from(document.querySelectorAll('.system-option-card'));
+  const newSystemTypeInput = document.getElementById('new-system-type');
+
+  function selectSystemCard(card) {
+    systemCards.forEach(c => c.classList.toggle('selected', c === card));
+    if (newSystemTypeInput && card.dataset.system) {
+      newSystemTypeInput.value = card.dataset.system;
+    }
+  }
+
+  systemCards.forEach(card => {
+    card.addEventListener('click', () => selectSystemCard(card));
+  });
+
+  // --- Sync from voice button (new UI) ---
+  const syncBtn = document.getElementById('survey-sync-from-voice');
+  if (syncBtn) {
+    syncBtn.addEventListener('click', () => {
+      // TODO: plug into your existing AI / transcript processing.
+      // For now, just log so you know the button works.
+      console.log('TODO: Sync survey fields from transcript JSON.');
+      syncFromVoiceTranscript();
+    });
+  }
+
+  // --- Clear all button (new UI) ---
+  const clearBtn = document.getElementById('survey-clear-all');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all survey fields?')) {
+        const inputs = document.querySelectorAll('#property-survey input, #property-survey textarea, #property-survey select');
+        inputs.forEach(el => {
+          if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = false;
+          } else {
+            el.value = '';
+          }
+        });
+        systemCards.forEach(c => c.classList.remove('selected'));
+        if (newSystemTypeInput) newSystemTypeInput.value = '';
+        console.log('[SurveyIntegration] All survey fields cleared');
+      }
+    });
+  }
+
+  console.log('[SurveyIntegration] 4-tab survey initialized');
 }
 
 /**
  * Setup event handlers for survey controls
  */
 function setupEventHandlers() {
-  // Sync from Voice button
-  const syncBtn = document.getElementById('sync-survey-voice-btn');
-  if (syncBtn) {
-    syncBtn.addEventListener('click', () => {
+  // Sync from Voice button (old UI - kept for compatibility)
+  const syncBtnOld = document.getElementById('sync-survey-voice-btn');
+  if (syncBtnOld) {
+    syncBtnOld.addEventListener('click', () => {
       syncFromVoiceTranscript();
     });
   }
 
-  // Clear All button
-  const clearBtn = document.getElementById('clear-survey-btn');
-  if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
+  // Clear All button (old UI - kept for compatibility)
+  const clearBtnOld = document.getElementById('clear-survey-btn');
+  if (clearBtnOld) {
+    clearBtnOld.addEventListener('click', () => {
       if (confirm('Are you sure you want to clear all survey selections?')) {
         clearAllSurvey();
       }
