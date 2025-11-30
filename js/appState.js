@@ -69,6 +69,11 @@ export const sessionState = {
     glazingU: null,
     roofU: null,
     floorU: null,
+    dimensions: {
+      width: null,
+      length: null,
+      ceilingHeight: null
+    },
     areas: {
       wall: null,
       window: null,
@@ -97,7 +102,9 @@ export const sessionState = {
   epc: {
     file: null,
     rating: '',
-    recommendations: []
+    recommendations: [],
+    heatLoss: null,
+    currentSystem: ''
   },
   sections: {
     Needs: '',
@@ -239,6 +246,7 @@ export function resetSessionState() {
     glazingU: null,
     roofU: null,
     floorU: null,
+    dimensions: { width: null, length: null, ceilingHeight: null },
     areas: { wall: null, window: null, roof: null, floor: null },
     buildingAge: '',
     flowTemp: ''
@@ -260,7 +268,9 @@ export function resetSessionState() {
   sessionState.epc = {
     file: null,
     rating: '',
-    recommendations: []
+    recommendations: [],
+    heatLoss: null,
+    currentSystem: ''
   };
   sessionState.sections = {
     Needs: '',
