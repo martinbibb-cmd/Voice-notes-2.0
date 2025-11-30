@@ -114,7 +114,14 @@ export default class JobExporter {
   }
 
   createDiaryFile(jobData) {
-    if (!jobData.diary) return null;
+    if (!jobData.diary || !jobData.diary.leadNumber) {
+      return JSON.stringify({
+        type: 'diary',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No diary data available'
+      }, null, 2);
+    }
     return JSON.stringify({
       type: 'diary',
       exportedAt: new Date().toISOString(),
@@ -123,7 +130,14 @@ export default class JobExporter {
   }
 
   createHeatLossFile(jobData) {
-    if (!jobData.heatLoss) return null;
+    if (!jobData.heatLoss || jobData.heatLoss.calculated === null) {
+      return JSON.stringify({
+        type: 'heat_loss_calculation',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No heat loss calculation performed'
+      }, null, 2);
+    }
     return JSON.stringify({
       type: 'heat_loss_calculation',
       exportedAt: new Date().toISOString(),
@@ -132,7 +146,14 @@ export default class JobExporter {
   }
 
   createSafetyFile(jobData) {
-    if (!jobData.safety) return null;
+    if (!jobData.safety) {
+      return JSON.stringify({
+        type: 'safety_checks',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No safety checks recorded'
+      }, null, 2);
+    }
     return JSON.stringify({
       type: 'safety_checks',
       exportedAt: new Date().toISOString(),

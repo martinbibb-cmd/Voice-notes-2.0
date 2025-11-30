@@ -189,10 +189,12 @@ export function calculateHeatLoss() {
   const roofArea = parseFloat(document.getElementById('roof-area')?.value) || 0;
   const floorArea = parseFloat(document.getElementById('ground-floor-area')?.value) || 0;
 
-  // Get temperature difference (indoor 21°C, outdoor assume -3°C for UK design conditions)
+  // Get temperature difference
+  // Indoor: 21°C (standard comfort temperature)
+  // Outdoor: -3°C (UK design condition as per BS EN 12831 for sizing heating systems)
   const flowTemp = parseInt(document.getElementById('flow-temp')?.value) || 70;
   const indoorTemp = 21;
-  const outdoorTemp = -3;
+  const outdoorTemp = -3; // UK design condition
   const deltaT = indoorTemp - outdoorTemp;
 
   // Get U-values
