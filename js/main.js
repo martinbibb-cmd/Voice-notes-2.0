@@ -173,7 +173,14 @@ class VoiceNotes2App {
       this.saveToLocalStorage();
     });
 
-    // Listen for transcript updates from voice recorder
+    // Listen for live/interim transcript updates for real-time display
+    this.voiceRecorder.on('interim', (interimText) => {
+      // Show the confirmed transcript plus the current interim text
+      const displayText = this.state.transcript + (interimText ? ` [${interimText}...]` : '');
+      transcriptArea.value = displayText;
+    });
+
+    // Listen for final transcript updates from voice recorder
     this.voiceRecorder.on('transcript', (text) => {
       transcriptArea.value = text;
       this.state.transcript = text;
@@ -224,11 +231,21 @@ class VoiceNotes2App {
     const annotateVoiceBtn = document.getElementById('annotate-with-voice');
     const photoAnnotation = document.getElementById('photo-annotation');
 
+    // Initialize location tracking property
+    this.currentPhotoLocation = null;
+
     takePhotoBtn.addEventListener('click', async () => {
       try {
+        // Request location while camera is loading
+        const locationPromise = this.getCurrentLocation();
         const photoBlob = await this.capturePhoto();
-        this.loadPhotoForMarkup(photoBlob);
+        const location = await locationPromise;
+        this.loadPhotoForMarkup(photoBlob, location);
       } catch (error) {
+        if (error.message === 'Camera capture cancelled') {
+          // User cancelled, don't show error
+          return;
+        }
         console.error('Failed to capture photo:', error);
         alert('Could not access camera. Please check camera permissions.');
       }
@@ -238,10 +255,12 @@ class VoiceNotes2App {
       photoInput.click();
     });
 
-    photoInput.addEventListener('change', (e) => {
+    photoInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
-        this.loadPhotoForMarkup(file);
+        // Try to get location for uploaded photos too
+        const location = await this.getCurrentLocation();
+        this.loadPhotoForMarkup(file, location);
       }
     });
 
@@ -300,24 +319,38 @@ class VoiceNotes2App {
     document.getElementById('save-marked-photo').addEventListener('click', () => {
       const annotation = photoAnnotation.value;
       const markedPhoto = this.photoMarkup.export();
+      
+      // Get original image as data URL
+      const originalDataUrl = this.photoMarkup.getOriginalDataUrl();
 
-      this.state.currentJob.photos.push({
+      const photoData = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
         section: this.state.currentSection,
         annotation: annotation,
-        original: this.photoMarkup.originalImage,
+        original: originalDataUrl,
         marked: markedPhoto
-      });
+      };
+      
+      // Add location if available
+      if (this.currentPhotoLocation) {
+        photoData.location = this.currentPhotoLocation;
+      }
+
+      this.state.currentJob.photos.push(photoData);
 
       this.updatePhotoGallery();
       photoAnnotation.value = '';
+      this.currentPhotoLocation = null;
 
       // Hide canvas and tools
       canvasContainer.classList.remove('active');
       markupTools.style.display = 'none';
 
-      alert('Photo saved with markup!');
+      const locationMsg = photoData.location 
+        ? ` Location: ${photoData.location.latitude.toFixed(6)}, ${photoData.location.longitude.toFixed(6)}`
+        : ' (Location not available)';
+      alert('Photo saved with markup!' + locationMsg);
     });
 
     annotateVoiceBtn.addEventListener('click', async () => {
@@ -427,35 +460,125 @@ class VoiceNotes2App {
 
   async capturePhoto() {
     return new Promise((resolve, reject) => {
+      // Create camera preview modal
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay active';
+      modal.id = 'camera-preview-modal';
+      modal.style.cssText = 'display: flex; align-items: center; justify-content: center;';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'modal-content';
+      modalContent.style.cssText = 'max-width: 90vw; max-height: 90vh; padding: 20px; text-align: center;';
+      
       const video = document.createElement('video');
-      const canvas = document.createElement('canvas');
+      video.autoplay = true;
+      video.playsInline = true;
+      video.style.cssText = 'max-width: 100%; max-height: 60vh; border-radius: 12px; background: #000;';
+      
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: center; margin-top: 16px;';
+      
+      const captureBtn = document.createElement('button');
+      captureBtn.className = 'btn btn-success';
+      captureBtn.innerHTML = '📸 Capture Photo';
+      captureBtn.style.cssText = 'padding: 16px 32px; font-size: 1.1rem;';
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'btn btn-secondary';
+      cancelBtn.innerHTML = '✕ Cancel';
+      
+      buttonContainer.appendChild(captureBtn);
+      buttonContainer.appendChild(cancelBtn);
+      
+      modalContent.appendChild(video);
+      modalContent.appendChild(buttonContainer);
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
 
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        .then(stream => {
+      let stream = null;
+      
+      // Start camera stream
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        } 
+      })
+        .then(s => {
+          stream = s;
           video.srcObject = stream;
-          video.play();
-
-          video.addEventListener('loadedmetadata', () => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-
-            stream.getTracks().forEach(track => track.stop());
-
-            canvas.toBlob(blob => {
-              resolve(blob);
-            }, 'image/jpeg', 0.95);
-          });
         })
-        .catch(reject);
+        .catch(err => {
+          modal.remove();
+          reject(err);
+        });
+      
+      // Capture button handler
+      captureBtn.addEventListener('click', () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        // Stop camera stream
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        modal.remove();
+        
+        canvas.toBlob(blob => {
+          resolve(blob);
+        }, 'image/jpeg', 0.95);
+      });
+      
+      // Cancel button handler
+      cancelBtn.addEventListener('click', () => {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        modal.remove();
+        reject(new Error('Camera capture cancelled'));
+      });
     });
   }
 
-  loadPhotoForMarkup(imageSource) {
+  async getCurrentLocation() {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        console.warn('Geolocation not supported');
+        resolve(null);
+        return;
+      }
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: new Date(position.timestamp).toISOString()
+          });
+        },
+        (error) => {
+          console.warn('Geolocation error:', error.message);
+          resolve(null);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    });
+  }
+
+  loadPhotoForMarkup(imageSource, location = null) {
     const canvasContainer = document.getElementById('canvas-container');
     const markupTools = document.getElementById('markup-tools');
 
     this.photoMarkup.loadImage(imageSource);
+    this.currentPhotoLocation = location;
     canvasContainer.classList.add('active');
     markupTools.style.display = 'flex';
   }
@@ -604,12 +727,21 @@ class VoiceNotes2App {
       return;
     }
 
-    gallery.innerHTML = photos.map(photo => `
-      <div class="photo-item" data-photo-id="${photo.id}">
-        <img src="${photo.marked}" alt="Photo">
-        <div class="photo-caption">${photo.annotation || 'No annotation'}</div>
-      </div>
-    `).join('');
+    gallery.innerHTML = photos.map(photo => {
+      const locationInfo = photo.location 
+        ? `<div class="photo-location" style="font-size: 0.75rem; color: #059669; margin-top: 4px;">📍 ${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}</div>`
+        : '';
+      
+      return `
+        <div class="photo-item" data-photo-id="${photo.id}">
+          <img src="${photo.marked}" alt="Photo">
+          <div class="photo-caption">
+            ${photo.annotation || 'No annotation'}
+            ${locationInfo}
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   displayRecommendations(recommendations) {
