@@ -464,24 +464,20 @@ class VoiceNotes2App {
       const modal = document.createElement('div');
       modal.className = 'modal-overlay active';
       modal.id = 'camera-preview-modal';
-      modal.style.cssText = 'display: flex; align-items: center; justify-content: center;';
       
       const modalContent = document.createElement('div');
       modalContent.className = 'modal-content';
-      modalContent.style.cssText = 'max-width: 90vw; max-height: 90vh; padding: 20px; text-align: center;';
       
       const video = document.createElement('video');
       video.autoplay = true;
       video.playsInline = true;
-      video.style.cssText = 'max-width: 100%; max-height: 60vh; border-radius: 12px; background: #000;';
       
       const buttonContainer = document.createElement('div');
-      buttonContainer.style.cssText = 'display: flex; gap: 12px; justify-content: center; margin-top: 16px;';
+      buttonContainer.className = 'camera-buttons';
       
       const captureBtn = document.createElement('button');
-      captureBtn.className = 'btn btn-success';
+      captureBtn.className = 'btn btn-success capture-btn';
       captureBtn.innerHTML = '📸 Capture Photo';
-      captureBtn.style.cssText = 'padding: 16px 32px; font-size: 1.1rem;';
       
       const cancelBtn = document.createElement('button');
       cancelBtn.className = 'btn btn-secondary';
@@ -729,7 +725,7 @@ class VoiceNotes2App {
 
     gallery.innerHTML = photos.map(photo => {
       const locationInfo = photo.location 
-        ? `<div class="photo-location" style="font-size: 0.75rem; color: #059669; margin-top: 4px;">📍 ${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}</div>`
+        ? `<div class="photo-location">📍 ${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}</div>`
         : '';
       
       return `
