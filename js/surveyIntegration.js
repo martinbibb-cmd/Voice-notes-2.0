@@ -107,7 +107,7 @@ function initFourTabSurvey() {
     const initial = systemCards.find(c => c.dataset.system === newSystemTypeInput.value);
     if (initial) selectSystemCard(initial);
   } else {
-    // default: no selection, cylinder visible (you'll tap one anyway)
+    // default: no selection, hide cylinder until user selects a type
     updateCylinderVisibility('');
   }
 
