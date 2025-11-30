@@ -319,6 +319,22 @@ export default class PhotoMarkup {
     return this.canvas.toDataURL('image/png');
   }
 
+  getOriginalDataUrl() {
+    // Export the original image (without markup) as a data URL
+    if (!this.originalImage) {
+      return null;
+    }
+    
+    // Create a temporary canvas to get the original image data URL
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = this.originalImage.width || this.originalImage.naturalWidth;
+    tempCanvas.height = this.originalImage.height || this.originalImage.naturalHeight;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(this.originalImage, 0, 0);
+    
+    return tempCanvas.toDataURL('image/jpeg', 0.95);
+  }
+
   undo() {
     if (this.elements.length > 0) {
       this.elements.pop();

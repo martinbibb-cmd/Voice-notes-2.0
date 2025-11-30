@@ -881,6 +881,37 @@
       gap: 8px;
       justify-content: flex-end;
     }
+
+    /* Camera preview modal styles */
+    #camera-preview-modal .modal-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      padding: 20px;
+      text-align: center;
+    }
+    #camera-preview-modal video {
+      max-width: 100%;
+      max-height: 60vh;
+      border-radius: 12px;
+      background: #000;
+    }
+    #camera-preview-modal .camera-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    #camera-preview-modal .capture-btn {
+      padding: 16px 32px;
+      font-size: 1.1rem;
+    }
+
+    /* Photo location display */
+    .photo-location {
+      font-size: 0.75rem;
+      color: #059669;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
