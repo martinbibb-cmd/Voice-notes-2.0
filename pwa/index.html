@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Notes 2.0 – Diary & Survey</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header id="top-bar">
+    <div class="top-left">
+      <button id="app-home-btn" class="app-title-btn">Voice Notes 2.0</button>
+    </div>
+    <div class="top-center">
+      <label for="session-select">Session:</label>
+      <select id="session-select">
+        <option value="new">New session…</option>
+        <option value="from-diary">Load from diary…</option>
+        <option value="by-customer">Load by customer…</option>
+      </select>
+    </div>
+    <div class="top-right">
+      <button id="save-btn">Save</button>
+      <button id="settings-btn">Settings</button>
+      <span id="user-status">Not logged in</span>
+      <button id="ai-toggle-btn" title="AI Help">?</button>
+    </div>
+  </header>
+
+  <div id="app-shell">
+    <!-- Left: main content views -->
+    <main id="main-views">
+      <!-- Diary view -->
+      <section id="view-diary" data-view="diary">
+        <div class="view-header">
+          <div class="date-controls">
+            <button id="prev-day-btn">&lt;</button>
+            <span id="current-day-label"></span>
+            <button id="next-day-btn">&gt;</button>
+            <div class="view-toggle">
+              <button class="view-toggle-btn active" data-mode="day">Day</button>
+              <button class="view-toggle-btn" data-mode="week">Week</button>
+            </div>
+          </div>
+        </div>
+        <div class="view-body diary-layout">
+          <div class="diary-left">
+            <h3>Days</h3>
+            <ul id="day-list" class="day-list">
+              <!-- Filled by JS -->
+            </ul>
+          </div>
+          <div class="diary-right">
+            <h3>Time slots</h3>
+            <div id="time-slot-list" class="time-slot-list">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Survey view -->
+      <section id="view-survey" data-view="survey" class="hidden">
+        <div class="view-header">
+          <div id="survey-step-bar" class="step-bar">
+            <!-- Filled by JS: steps 1–8 -->
+          </div>
+        </div>
+        <div class="view-body survey-layout">
+          <div id="survey-content">
+            <!-- Step content rendered by JS -->
+          </div>
+        </div>
+        <footer class="survey-footer">
+          <button id="survey-back-btn">&larr; Back</button>
+          <div id="survey-progress"></div>
+          <button id="survey-next-btn">Next &rarr;</button>
+        </footer>
+      </section>
+
+      <!-- Settings view -->
+      <section id="view-settings" data-view="settings" class="hidden">
+        <div class="view-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="view-body">
+          <p>Settings UI placeholder. Wire this into your existing config later.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Right: AI panel -->
+    <aside id="ai-panel" class="hidden">
+      <header class="ai-header">
+        <h3>AI Helper</h3>
+        <button id="ai-close-btn">&times;</button>
+      </header>
+      <div id="ai-messages" class="ai-messages">
+        <!-- Chat messages -->
+      </div>
+      <form id="ai-form" class="ai-form">
+        <textarea id="ai-input" rows="3" placeholder="Ask anything (explanations only, no changes)…"></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </aside>
+  </div>
+
+  <!-- Appointment modal -->
+  <div id="appointment-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <header class="modal-header">
+        <h3 id="appointment-modal-title">Appointment</h3>
+        <button id="appointment-modal-close">&times;</button>
+      </header>
+      <div class="modal-body">
+        <div class="field">
+          <label for="appt-customer-name">Customer name</label>
+          <input id="appt-customer-name" type="text">
+        </div>
+        <div class="field">
+          <label for="appt-lead-id">Lead ID</label>
+          <input id="appt-lead-id" type="text">
+        </div>
+        <div class="field">
+          <label for="appt-address">Address</label>
+          <input id="appt-address" type="text">
+        </div>
+        <div class="field">
+          <label for="appt-postcode">Postcode</label>
+          <input id="appt-postcode" type="text">
+        </div>
+        <div class="field">
+          <label for="appt-phone">Phone</label>
+          <input id="appt-phone" type="tel">
+        </div>
+        <div class="field">
+          <label for="appt-notes">Notes / access</label>
+          <textarea id="appt-notes" rows="3"></textarea>
+        </div>
+        <div class="field">
+          <label for="appt-system-type">System type (guess)</label>
+          <select id="appt-system-type">
+            <option value="">Unknown</option>
+            <option value="regular">Regular</option>
+            <option value="system">System</option>
+            <option value="combi">Combi</option>
+            <option value="electric">Electric</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <footer class="modal-footer">
+        <button id="appt-save-btn">Save</button>
+        <button id="appt-start-survey-btn" class="primary">Start survey</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

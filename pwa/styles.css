@@ -1,0 +1,545 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #222;
+  background: #f5f5f5;
+}
+
+/* Top bar */
+
+#top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1f2933;
+  color: white;
+  padding: 0.5rem 1rem;
+}
+
+.top-left,
+.top-center,
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-title-btn {
+  background: transparent;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#top-bar button {
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#save-btn,
+#settings-btn {
+  background: #4b8cf7;
+  color: white;
+}
+
+#ai-toggle-btn {
+  background: #fbbf24;
+  color: #222;
+  font-weight: bold;
+}
+
+#user-status {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* App shell */
+
+#app-shell {
+  display: flex;
+  height: calc(100vh - 48px);
+}
+
+/* Main views */
+
+#main-views {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.view-header {
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid #dde0e3;
+}
+
+.view-body {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  overflow: auto;
+  background: #f5f5f5;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Diary layout */
+
+.diary-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) 1fr;
+  gap: 1rem;
+}
+
+.diary-left,
+.diary-right {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.day-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.day-list li {
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.day-list li.active {
+  background: #4b8cf7;
+  color: white;
+}
+
+.time-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.time-slot-card {
+  padding: 0.6rem 0.7rem;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #e1e4e8;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.time-slot-card.booked {
+  background: #e1efff;
+  border-color: #4b8cf7;
+}
+
+.slot-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.slot-time {
+  font-weight: 600;
+}
+
+.slot-sub {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.slot-badges {
+  display: flex;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.badge {
+  padding: 0.1rem 0.3rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  background: #e5e7eb;
+}
+
+/* Date controls */
+
+.date-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.date-controls button {
+  border-radius: 999px;
+  border: 1px solid #cbd2da;
+  background: #ffffff;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.view-toggle-btn {
+  border-radius: 999px;
+  border: 1px solid #cbd2da;
+  padding: 0.25rem 0.7rem;
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.view-toggle-btn.active {
+  background: #4b8cf7;
+  color: white;
+  border-color: #4b8cf7;
+}
+
+/* Survey */
+
+.survey-layout {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.step-pill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #cbd2da;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: #ffffff;
+}
+
+.step-pill.active {
+  background: #4b8cf7;
+  color: white;
+  border-color: #4b8cf7;
+}
+
+#survey-content {
+  flex: 1;
+  background: #ffffff;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  overflow: auto;
+}
+
+.survey-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border-top: 1px solid #dde0e3;
+}
+
+#survey-back-btn,
+#survey-next-btn {
+  border-radius: 4px;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+}
+
+#survey-back-btn {
+  background: #e5e7eb;
+}
+
+#survey-next-btn {
+  background: #4b8cf7;
+  color: white;
+}
+
+#survey-progress {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* Step 1 specific UI */
+
+.step-columns {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+  gap: 1rem;
+}
+
+.step-panel {
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  padding: 0.75rem;
+  background: #f9fafb;
+}
+
+.field {
+  margin-bottom: 0.6rem;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 0.35rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid #cbd2da;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.status-line {
+  font-size: 0.85rem;
+  margin-top: 0.4rem;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+.status-pill.on {
+  background: #4ade80;
+  color: #064e3b;
+}
+
+.status-pill.off {
+  background: #fecaca;
+  color: #7f1d1d;
+}
+
+#transcript-box {
+  height: 240px;
+  overflow: auto;
+  border-radius: 4px;
+  border: 1px solid #cbd2da;
+  padding: 0.5rem;
+  background: #ffffff;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+}
+
+/* AI panel */
+
+#ai-panel {
+  width: 280px;
+  max-width: 320px;
+  border-left: 1px solid #dde0e3;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #dde0e3;
+}
+
+.ai-header h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+#ai-close-btn {
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.ai-messages {
+  flex: 1;
+  padding: 0.5rem;
+  overflow: auto;
+  font-size: 0.9rem;
+}
+
+.ai-message {
+  margin-bottom: 0.4rem;
+}
+
+.ai-message.user {
+  text-align: right;
+}
+
+.ai-message.assistant {
+  text-align: left;
+}
+
+.ai-bubble {
+  display: inline-block;
+  padding: 0.35rem 0.5rem;
+  border-radius: 10px;
+  max-width: 100%;
+}
+
+.ai-message.user .ai-bubble {
+  background: #4b8cf7;
+  color: white;
+}
+
+.ai-message.assistant .ai-bubble {
+  background: #e5e7eb;
+}
+
+.ai-form {
+  border-top: 1px solid #dde0e3;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.ai-form button {
+  align-self: flex-end;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  border: none;
+  background: #4b8cf7;
+  color: white;
+  cursor: pointer;
+}
+
+/* Modal */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+}
+
+.modal-content {
+  position: relative;
+  z-index: 21;
+  width: min(480px, 94vw);
+  max-height: 90vh;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header,
+.modal-footer {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid #dde0e3;
+}
+
+.modal-footer {
+  border-top: 1px solid #dde0e3;
+  border-bottom: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.modal-body {
+  padding: 0.6rem 0.8rem;
+  overflow: auto;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+#appointment-modal-close {
+  float: right;
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.modal-footer button {
+  border-radius: 4px;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}
+
+.modal-footer .primary {
+  background: #4b8cf7;
+  color: white;
+}
+
+/* Utility */
+
+.primary {
+  background: #4b8cf7;
+  color: white;
+}
+
+/* Responsive tweaks */
+
+@media (max-width: 900px) {
+  #app-shell {
+    flex-direction: column;
+  }
+  #ai-panel {
+    width: 100%;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid #dde0e3;
+  }
+  .step-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
