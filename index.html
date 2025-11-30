@@ -1355,41 +1355,50 @@
 
             <!-- SYSTEM TYPE GRAPHICS STRIP -->
             <div class="system-options-row">
+              <!-- COMBI -->
               <div class="system-option-card" data-system="combi">
                 <div class="system-option-image">
-                  <!-- You can swap this for a dedicated combi graphic if you have one -->
                   <img src="Assets/gravity.JPG" alt="Combi boiler graphic" />
                 </div>
                 <h4>Combi</h4>
                 <p>Space-saving, instant hot water. Best when demand is modest &amp; pressure is good.</p>
               </div>
 
-              <div class="system-option-card" data-system="system-cylinder">
+              <!-- SYSTEM -->
+              <div class="system-option-card" data-system="system">
                 <div class="system-option-image">
-                  <img src="Assets/vented-cylinder.PNG" alt="System with cylinder" />
+                  <img src="Assets/System-components.JPG" alt="System boiler with cylinder" />
                 </div>
-                <h4>System + cylinder</h4>
-                <p>Ideal for higher hot-water demand and multiple bathrooms.</p>
+                <h4>System</h4>
+                <p>Sealed system boiler working with a separate cylinder – good for higher hot-water demand.</p>
               </div>
 
-              <div class="system-option-card" data-system="system-mixergy">
-                <div class="system-option-image">
-                  <img src="Assets/unvented-cylinder.JPG" alt="System with Mixergy" />
-                </div>
-                <h4>System + smart cylinder</h4>
-                <p>Future-ready with smart scheduling and flexible heat sources.</p>
-              </div>
-
+              <!-- REGULAR -->
               <div class="system-option-card" data-system="regular">
                 <div class="system-option-image">
                   <img src="Assets/open-vented-schematic.JPG" alt="Regular boiler schematic" />
                 </div>
                 <h4>Regular</h4>
-                <p>Best where tanks &amp; pipework suit keeping an open-vented layout.</p>
+                <p>Open-vented layout using tanks and a cylinder – best when existing pipework suits keeping it.</p>
               </div>
             </div>
 
+            <!-- Hidden field so the app knows what was chosen -->
             <input type="hidden" id="new-system-type" />
+
+            <!-- CYLINDER SECTION: only relevant for SYSTEM or REGULAR -->
+            <div id="new-system-cylinder-section">
+              <h4>Cylinder (for System / Regular)</h4>
+              <p class="hint">
+                Use this when the new system keeps or adds a cylinder. It will be ignored for a combi.
+              </p>
+              <div class="survey-chip-column">
+                <label><input type="radio" name="new-cylinder" value="keep-existing" /> Keep existing cylinder</label>
+                <label><input type="radio" name="new-cylinder" value="new-unvented" /> New unvented cylinder</label>
+                <label><input type="radio" name="new-cylinder" value="new-vented" /> New vented cylinder</label>
+                <label><input type="radio" name="new-cylinder" value="none" /> No cylinder (replace with combi)</label>
+              </div>
+            </div>
 
             <h4>New boiler location</h4>
             <div class="survey-grid">
@@ -1431,38 +1440,30 @@
             </div>
 
             <h4>Gas supply &amp; upgrades</h4>
-            <div class="survey-grid">
-              <div>
-                <div class="survey-chip-row">
-                  <label><input type="checkbox" value="gas-ok" /> Existing run OK</label>
-                  <label><input type="checkbox" value="upgrade-22" /> Upgrade to 22 mm</label>
-                  <label><input type="checkbox" value="upgrade-28" /> Upgrade to 28 mm</label>
-                  <label><input type="checkbox" value="meter-move" /> Meter move required</label>
-                  <label><input type="checkbox" value="meter-upgrade" /> Meter upgrade (U6/U16)</label>
-                </div>
-              </div>
+            <!-- NO survey-grid here so it doesn't split horribly on mobile -->
+            <div class="survey-chip-column">
+              <label><input type="checkbox" value="gas-ok" /> Existing run OK</label>
+              <label><input type="checkbox" value="upgrade-22" /> Upgrade to 22 mm</label>
+              <label><input type="checkbox" value="upgrade-28" /> Upgrade to 28 mm</label>
+              <label><input type="checkbox" value="meter-move" /> Meter move required</label>
+              <label><input type="checkbox" value="meter-upgrade" /> Meter upgrade (U6/U16)</label>
             </div>
 
             <h4>Controls &amp; extras</h4>
-            <div class="survey-grid">
-              <div>
-                <label>Controls</label>
-                <div class="survey-chip-row">
-                  <label><input type="radio" name="new-controls" value="basic" /> Programmer + room stat</label>
-                  <label><input type="radio" name="new-controls" value="smart" /> Smart controls (e.g. Hive)</label>
-                  <label><input type="radio" name="new-controls" value="advanced" /> Weather comp / advanced</label>
-                </div>
-              </div>
 
-              <div>
-                <label>Other works</label>
-                <div class="survey-chip-row">
-                  <label><input type="checkbox" value="remove-cylinder" /> Remove old cylinder</label>
-                  <label><input type="checkbox" value="remove-tanks" /> Remove loft tanks</label>
-                  <label><input type="checkbox" value="replace-pump" /> Replace pump/valves</label>
-                  <label><input type="checkbox" value="add-trvs" /> Add / upgrade TRVs</label>
-                </div>
-              </div>
+            <label class="bold-label">Controls</label>
+            <div class="survey-chip-column">
+              <label><input type="radio" name="new-controls" value="basic" /> Programmer + room stat</label>
+              <label><input type="radio" name="new-controls" value="smart" /> Smart controls (e.g. Hive)</label>
+              <label><input type="radio" name="new-controls" value="advanced" /> Weather compensation / advanced controls</label>
+            </div>
+
+            <label class="bold-label">Other works</label>
+            <div class="survey-chip-column">
+              <label><input type="checkbox" value="remove-cylinder" /> Remove old cylinder</label>
+              <label><input type="checkbox" value="remove-tanks" /> Remove loft tanks</label>
+              <label><input type="checkbox" value="replace-pump" /> Replace pump / valves</label>
+              <label><input type="checkbox" value="add-trvs" /> Add / upgrade TRVs</label>
             </div>
 
             <h4>Customer-friendly new system summary</h4>
