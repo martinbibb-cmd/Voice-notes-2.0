@@ -17,6 +17,29 @@ export const sessionState = {
   metadata: {
     sessionId: '',
     createdAt: new Date().toISOString(),
+    leadNumber: '',
+    customerName: '',
+    customerAddress: '',
+  },
+  // Diary / Appointment data
+  diary: {
+    leadNumber: '',
+    appointmentDate: '',
+    appointmentTime: '',
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerAddress: '',
+    customerPostcode: '',
+    propertyType: '',
+    bedrooms: '',
+    bathrooms: '',
+    occupants: '',
+    systemType: '',
+    cylinderType: '',
+    coils: '',
+    secondHeatSource: '',
+    notes: '',
   },
   transcript: {
     raw: '',
@@ -36,6 +59,45 @@ export const sessionState = {
     hazards: [],
     parking: '',
     loftAccess: '',
+  },
+  // Heat loss calculator data
+  heatLoss: {
+    calculated: null,
+    fabric: null,
+    ventilation: null,
+    wallU: null,
+    glazingU: null,
+    roofU: null,
+    floorU: null,
+    areas: {
+      wall: null,
+      window: null,
+      roof: null,
+      floor: null
+    },
+    buildingAge: '',
+    flowTemp: ''
+  },
+  // Safety checks data
+  safety: {
+    safetyIssues: [],
+    ladderWork: [],
+    accessEquipment: [],
+    roofConcerns: [],
+    earthingSystem: '',
+    earthImpedance: '',
+    electrics: [],
+    gasMeterLocation: '',
+    gasPipeSize: '',
+    gasLeakSigns: [],
+    accessHazards: [],
+    safetyNotes: ''
+  },
+  // EPC data
+  epc: {
+    file: null,
+    rating: '',
+    recommendations: []
   },
   sections: {
     Needs: '',
@@ -111,10 +173,44 @@ export function setManualSpecItems(items) {
   sessionState.manualSpec.items = items || [];
 }
 
+export function updateDiary(partial) {
+  sessionState.diary = { ...sessionState.diary, ...partial };
+}
+
+export function updateHeatLoss(partial) {
+  sessionState.heatLoss = { ...sessionState.heatLoss, ...partial };
+}
+
+export function updateSafety(partial) {
+  sessionState.safety = { ...sessionState.safety, ...partial };
+}
+
 export function resetSessionState() {
   sessionState.metadata = {
     sessionId: '',
     createdAt: new Date().toISOString(),
+    leadNumber: '',
+    customerName: '',
+    customerAddress: '',
+  };
+  sessionState.diary = {
+    leadNumber: '',
+    appointmentDate: '',
+    appointmentTime: '',
+    customerName: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerAddress: '',
+    customerPostcode: '',
+    propertyType: '',
+    bedrooms: '',
+    bathrooms: '',
+    occupants: '',
+    systemType: '',
+    cylinderType: '',
+    coils: '',
+    secondHeatSource: '',
+    notes: '',
   };
   sessionState.transcript = {
     raw: '',
@@ -134,6 +230,37 @@ export function resetSessionState() {
     hazards: [],
     parking: '',
     loftAccess: '',
+  };
+  sessionState.heatLoss = {
+    calculated: null,
+    fabric: null,
+    ventilation: null,
+    wallU: null,
+    glazingU: null,
+    roofU: null,
+    floorU: null,
+    areas: { wall: null, window: null, roof: null, floor: null },
+    buildingAge: '',
+    flowTemp: ''
+  };
+  sessionState.safety = {
+    safetyIssues: [],
+    ladderWork: [],
+    accessEquipment: [],
+    roofConcerns: [],
+    earthingSystem: '',
+    earthImpedance: '',
+    electrics: [],
+    gasMeterLocation: '',
+    gasPipeSize: '',
+    gasLeakSigns: [],
+    accessHazards: [],
+    safetyNotes: ''
+  };
+  sessionState.epc = {
+    file: null,
+    rating: '',
+    recommendations: []
   };
   sessionState.sections = {
     Needs: '',

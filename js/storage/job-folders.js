@@ -1,9 +1,45 @@
 // Job Folder Exporter
 // Creates comprehensive job folders with all notes, photos, audio, and documents
+// Files are named based on lead number (customer reference)
 
 export default class JobExporter {
   constructor() {
     this.zipSupported = typeof JSZip !== 'undefined';
+  }
+
+  /**
+   * Get the folder name based on lead number or fallback to timestamp
+   */
+  getFolderName(jobData) {
+    // Try to get lead number from various sources
+    const leadNumber = jobData.leadNumber || 
+                       jobData.metadata?.leadNumber || 
+                       jobData.diary?.leadNumber ||
+                       '';
+    
+    if (leadNumber) {
+      return this.sanitizeFilename(leadNumber);
+    }
+
+    // Fallback to customer name + date
+    const customerName = jobData.customer || 
+                         jobData.metadata?.customerName || 
+                         jobData.diary?.customerName ||
+                         '';
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    if (customerName) {
+      return this.sanitizeFilename(`${customerName}_${timestamp}`);
+    }
+
+    return `Job_${timestamp}`;
+  }
+
+  /**
+   * Sanitize filename to remove invalid characters
+   */
+  sanitizeFilename(name) {
+    return name.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/_+/g, '_');
   }
 
   async exportJobFolder(jobData) {
@@ -16,14 +52,16 @@ export default class JobExporter {
   }
 
   createJobFolderStructure(jobData) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    const jobName = jobData.name || `Job_${timestamp}`;
+    const folderName = this.getFolderName(jobData);
 
     return {
-      name: jobName,
+      name: folderName,
       internal: {
         'full-transcript.txt': this.createTranscriptFile(jobData),
         'metadata.json': this.createMetadataFile(jobData),
+        'diary.json': this.createDiaryFile(jobData),
+        'heat-loss.json': this.createHeatLossFile(jobData),
+        'safety.json': this.createSafetyFile(jobData),
         sections: this.createSectionFiles(jobData.sections),
         photos: {
           original: this.extractOriginalPhotos(jobData.photos),
@@ -39,11 +77,13 @@ export default class JobExporter {
   }
 
   createTranscriptFile(jobData) {
+    const leadNumber = jobData.leadNumber || jobData.metadata?.leadNumber || 'Not specified';
     let transcript = `FULL TRANSCRIPT\n`;
     transcript += `=================\n\n`;
+    transcript += `Lead Number: ${leadNumber}\n`;
     transcript += `Job: ${jobData.name || 'Unnamed'}\n`;
     transcript += `Date: ${new Date(jobData.metadata?.created || Date.now()).toLocaleDateString()}\n`;
-    transcript += `Customer: ${jobData.customer || 'Not specified'}\n\n`;
+    transcript += `Customer: ${jobData.customer || jobData.diary?.customerName || 'Not specified'}\n\n`;
     transcript += `---\n\n`;
     transcript += jobData.transcript || 'No transcript available';
 
@@ -55,16 +95,70 @@ export default class JobExporter {
       version: '2.0',
       created: jobData.metadata?.created || new Date().toISOString(),
       lastModified: jobData.metadata?.lastModified || new Date().toISOString(),
-      customer: jobData.customer || '',
+      leadNumber: jobData.leadNumber || jobData.metadata?.leadNumber || '',
+      customer: jobData.customer || jobData.diary?.customerName || '',
+      customerAddress: jobData.diary?.customerAddress || '',
+      customerPhone: jobData.diary?.customerPhone || '',
+      customerEmail: jobData.diary?.customerEmail || '',
       jobName: jobData.name || '',
       sectionCount: Object.keys(jobData.sections || {}).length,
       photoCount: (jobData.photos || []).length,
       recommendationCount: (jobData.recommendations || []).length,
       sections: Object.keys(jobData.sections || {}),
-      hasAudio: (jobData.audioBlobs || []).length > 0
+      hasAudio: (jobData.audioBlobs || []).length > 0,
+      hasHeatLoss: !!(jobData.heatLoss?.calculated),
+      hasDiary: !!(jobData.diary?.leadNumber)
     };
 
     return JSON.stringify(metadata, null, 2);
+  }
+
+  createDiaryFile(jobData) {
+    if (!jobData.diary || !jobData.diary.leadNumber) {
+      return JSON.stringify({
+        type: 'diary',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No diary data available'
+      }, null, 2);
+    }
+    return JSON.stringify({
+      type: 'diary',
+      exportedAt: new Date().toISOString(),
+      data: jobData.diary
+    }, null, 2);
+  }
+
+  createHeatLossFile(jobData) {
+    if (!jobData.heatLoss || jobData.heatLoss.calculated === null) {
+      return JSON.stringify({
+        type: 'heat_loss_calculation',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No heat loss calculation performed'
+      }, null, 2);
+    }
+    return JSON.stringify({
+      type: 'heat_loss_calculation',
+      exportedAt: new Date().toISOString(),
+      data: jobData.heatLoss
+    }, null, 2);
+  }
+
+  createSafetyFile(jobData) {
+    if (!jobData.safety) {
+      return JSON.stringify({
+        type: 'safety_checks',
+        exportedAt: new Date().toISOString(),
+        data: null,
+        note: 'No safety checks recorded'
+      }, null, 2);
+    }
+    return JSON.stringify({
+      type: 'safety_checks',
+      exportedAt: new Date().toISOString(),
+      data: jobData.safety
+    }, null, 2);
   }
 
   createSectionFiles(sections) {
@@ -74,10 +168,12 @@ export default class JobExporter {
 
     Object.entries(sections).forEach(([key, section]) => {
       const filename = `${key}.txt`;
-      let content = `${section.name}\n`;
-      content += `${'='.repeat(section.name.length)}\n\n`;
-      content += `Created: ${new Date(section.timestamp).toLocaleString()}\n\n`;
-      content += section.content || 'No content';
+      let content = `${section.name || key}\n`;
+      content += `${'='.repeat((section.name || key).length)}\n\n`;
+      if (section.timestamp) {
+        content += `Created: ${new Date(section.timestamp).toLocaleString()}\n\n`;
+      }
+      content += section.content || section || 'No content';
 
       files[filename] = content;
     });

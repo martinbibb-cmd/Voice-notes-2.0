@@ -935,7 +935,8 @@
   </header>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="voice">Voice Notes</button>
+    <button class="tab active" data-tab="diary">Diary</button>
+    <button class="tab" data-tab="voice">Voice Notes</button>
     <button class="tab" data-tab="survey">Survey</button>
     <button class="tab" data-tab="photos">Photos & Markup</button>
     <button class="tab" data-tab="recommendations">Recommendations</button>
@@ -943,8 +944,152 @@
   </nav>
 
   <main>
+    <!-- DIARY TAB - First Page -->
+    <div class="tab-content active" id="diary">
+      <div class="grid grid-2">
+        <!-- Left Column: Customer Details -->
+        <div>
+          <div class="card">
+            <h2>📅 Appointment Details</h2>
+            <div class="form-group">
+              <label for="lead-number">Lead Number (Customer Reference) *</label>
+              <input type="text" id="lead-number" placeholder="e.g., L001234" required>
+              <small style="color: var(--muted);">This will be used to create the job folder</small>
+            </div>
+            <div class="form-group">
+              <label for="appointment-date">Appointment Date</label>
+              <input type="date" id="appointment-date">
+            </div>
+            <div class="form-group">
+              <label for="appointment-time">Appointment Time</label>
+              <input type="time" id="appointment-time">
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>👤 Customer Details</h2>
+            <div class="form-group">
+              <label for="diary-customer-name">Customer Name *</label>
+              <input type="text" id="diary-customer-name" placeholder="Full name">
+            </div>
+            <div class="form-group">
+              <label for="diary-customer-phone">Phone Number</label>
+              <input type="tel" id="diary-customer-phone" placeholder="e.g., 07123 456789">
+            </div>
+            <div class="form-group">
+              <label for="diary-customer-email">Email Address</label>
+              <input type="email" id="diary-customer-email" placeholder="customer@email.com">
+            </div>
+            <div class="form-group">
+              <label for="diary-customer-address">Property Address *</label>
+              <textarea id="diary-customer-address" placeholder="Full property address" style="min-height: 80px;"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="diary-customer-postcode">Postcode</label>
+              <input type="text" id="diary-customer-postcode" placeholder="e.g., AB1 2CD">
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>📝 Appointment Notes</h2>
+            <div class="form-group">
+              <label for="diary-notes">Notes / Requirements</label>
+              <textarea id="diary-notes" placeholder="Any notes from the initial enquiry..." style="min-height: 100px;"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Quick Actions & Property Info -->
+        <div>
+          <div class="card">
+            <h2>🏠 Property Quick Info</h2>
+            <div class="form-group">
+              <label for="diary-property-type">Property Type</label>
+              <select id="diary-property-type">
+                <option value="">Select...</option>
+                <option>Detached</option>
+                <option>Semi-detached</option>
+                <option>Mid-terrace</option>
+                <option>End-terrace</option>
+                <option>Flat</option>
+                <option>Bungalow</option>
+              </select>
+            </div>
+            <div class="survey-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+              <div class="form-group">
+                <label for="diary-bedrooms">Bedrooms</label>
+                <input type="number" id="diary-bedrooms" min="0" max="10">
+              </div>
+              <div class="form-group">
+                <label for="diary-bathrooms">Bathrooms</label>
+                <input type="number" id="diary-bathrooms" min="0" max="10">
+              </div>
+              <div class="form-group">
+                <label for="diary-occupants">Occupants</label>
+                <input type="number" id="diary-occupants" min="0" max="20">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>🔥 Current Heating System</h2>
+            <div class="form-group">
+              <label>System Type</label>
+              <div class="survey-chip-row">
+                <label><input type="radio" name="diary-system-type" value="regular" /> Regular</label>
+                <label><input type="radio" name="diary-system-type" value="system" /> System</label>
+                <label><input type="radio" name="diary-system-type" value="combi" /> Combi</label>
+                <label><input type="radio" name="diary-system-type" value="storage-combi" /> Storage Combi</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Cylinder Type</label>
+              <div class="survey-chip-row">
+                <label><input type="radio" name="diary-cylinder-type" value="na" /> N/A</label>
+                <label><input type="radio" name="diary-cylinder-type" value="unvented" /> Unvented</label>
+                <label><input type="radio" name="diary-cylinder-type" value="open-vented" /> Open Vented</label>
+                <label><input type="radio" name="diary-cylinder-type" value="combi-cylinder" /> Combi Cylinder</label>
+                <label><input type="radio" name="diary-cylinder-type" value="thermal-store" /> Thermal Store</label>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Coils</label>
+              <div class="survey-chip-row">
+                <label><input type="radio" name="diary-coils" value="none" /> None</label>
+                <label><input type="radio" name="diary-coils" value="single" /> Single</label>
+                <label><input type="radio" name="diary-coils" value="twin" /> Twin</label>
+              </div>
+            </div>
+            <div class="form-group" id="second-heat-source-group" style="display: none;">
+              <label>Second Heat Source (Twin Coil)</label>
+              <div class="survey-chip-row">
+                <label><input type="radio" name="diary-second-heat" value="solar-thermal" /> Solar Thermal</label>
+                <label><input type="radio" name="diary-second-heat" value="aga" /> Aga</label>
+                <label><input type="radio" name="diary-second-heat" value="other" /> Other</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>⚡ Actions</h2>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <button class="btn btn-success" id="start-appointment-btn">
+                ✅ Start Appointment
+              </button>
+              <button class="btn btn-secondary" id="save-diary-btn">
+                💾 Save Customer Details
+              </button>
+              <p style="color: var(--muted); font-size: 0.85rem; margin: 8px 0 0 0;">
+                Clicking "Start Appointment" will create a folder for this job and move you to the Survey tab.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- VOICE NOTES TAB -->
-    <div class="tab-content active" id="voice">
+    <div class="tab-content" id="voice">
       <div class="grid grid-2">
         <div>
           <div class="card">
@@ -1209,6 +1354,151 @@
               </div>
             </div>
 
+            <!-- Heat Loss Calculator Section -->
+            <h4>🔥 Heat Loss Calculator</h4>
+            <div style="padding: 12px; background: #fef3c7; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid #f59e0b;">
+              <p style="margin: 0; color: #92400e; font-size: 0.9em;">
+                <strong>💡 Tip:</strong> Use Google Earth to measure the property dimensions. 
+                <a href="https://earth.google.com/web/" target="_blank" rel="noopener" style="color: #1d4ed8; text-decoration: underline;">Open Google Earth</a>
+              </p>
+            </div>
+
+            <div class="survey-grid">
+              <div>
+                <label>Building Age / Year Built</label>
+                <select id="building-age">
+                  <option value="">Select period...</option>
+                  <option value="pre-1900">Pre-1900 (Victorian - solid walls, likely no insulation)</option>
+                  <option value="1900-1929">1900-1929 (Edwardian - solid 9" walls)</option>
+                  <option value="1930-1949">1930-1949 (Cavity walls introduced, no insulation)</option>
+                  <option value="1950-1965">1950-1965 (Post-war, cavity walls, minimal insulation)</option>
+                  <option value="1966-1975">1966-1975 (Some insulation, single glazing)</option>
+                  <option value="1976-1990">1976-1990 (Building regs improved, some DG)</option>
+                  <option value="1991-2005">1991-2005 (Better insulation, likely double glazed)</option>
+                  <option value="2006-2012">2006-2012 (Good insulation standards)</option>
+                  <option value="2013-present">2013-present (Modern building regs, well insulated)</option>
+                </select>
+                <small class="hint" style="display: block; margin-top: 4px;">
+                  <strong>Hints:</strong> Check date stones, tile patterns, window styles. Victorian = sash windows, Edwardian = bay windows.
+                </small>
+              </div>
+              <div>
+                <label>Floor Area (m²)</label>
+                <input id="floor-area" type="number" min="0" placeholder="Total floor area" />
+              </div>
+            </div>
+
+            <h5 style="margin-top: 16px; margin-bottom: 8px;">U-Values</h5>
+            <div class="survey-grid">
+              <div>
+                <label>Wall Construction</label>
+                <select id="wall-construction">
+                  <option value="">Select...</option>
+                  <option value="solid-uninsulated">Solid wall - uninsulated (U=2.1)</option>
+                  <option value="solid-insulated">Solid wall - insulated (U=0.6)</option>
+                  <option value="cavity-uninsulated">Cavity wall - unfilled (U=1.5)</option>
+                  <option value="cavity-filled">Cavity wall - filled (U=0.5)</option>
+                  <option value="timber-frame">Timber frame (U=0.4)</option>
+                  <option value="modern-insulated">Modern insulated (U=0.3)</option>
+                </select>
+              </div>
+              <div>
+                <label>Glazing Type</label>
+                <select id="glazing-type">
+                  <option value="">Select...</option>
+                  <option value="single">Single glazed (U=5.0)</option>
+                  <option value="old-double">Old double glazed pre-2002 (U=3.0)</option>
+                  <option value="modern-double">Modern double glazed (U=1.6)</option>
+                  <option value="triple">Triple glazed (U=1.0)</option>
+                </select>
+              </div>
+              <div>
+                <label>Roof Insulation</label>
+                <select id="roof-insulation">
+                  <option value="">Select...</option>
+                  <option value="none">None / minimal (U=2.3)</option>
+                  <option value="100mm">100mm loft insulation (U=0.4)</option>
+                  <option value="200mm">200mm loft insulation (U=0.2)</option>
+                  <option value="270mm+">270mm+ loft insulation (U=0.15)</option>
+                  <option value="flat-uninsulated">Flat roof - uninsulated (U=1.5)</option>
+                  <option value="flat-insulated">Flat roof - insulated (U=0.25)</option>
+                </select>
+              </div>
+              <div>
+                <label>Floor Insulation</label>
+                <select id="floor-insulation">
+                  <option value="">Select...</option>
+                  <option value="suspended-uninsulated">Suspended timber - uninsulated (U=0.7)</option>
+                  <option value="suspended-insulated">Suspended timber - insulated (U=0.25)</option>
+                  <option value="solid-uninsulated">Solid floor - uninsulated (U=0.8)</option>
+                  <option value="solid-insulated">Solid floor - insulated (U=0.25)</option>
+                </select>
+              </div>
+            </div>
+
+            <h5 style="margin-top: 16px; margin-bottom: 8px;">Measurements</h5>
+            <div class="survey-grid">
+              <div>
+                <label>External Wall Area (m²)</label>
+                <input id="wall-area" type="number" min="0" step="0.1" placeholder="Total external wall area" />
+              </div>
+              <div>
+                <label>Window Area (m²)</label>
+                <input id="window-area" type="number" min="0" step="0.1" placeholder="Total window area" />
+              </div>
+              <div>
+                <label>Roof Area (m²)</label>
+                <input id="roof-area" type="number" min="0" step="0.1" placeholder="Roof area" />
+              </div>
+              <div>
+                <label>Floor Area (m²)</label>
+                <input id="ground-floor-area" type="number" min="0" step="0.1" placeholder="Ground floor area" />
+              </div>
+            </div>
+
+            <div class="survey-grid" style="margin-top: 12px;">
+              <div>
+                <label>Flow Temperature</label>
+                <select id="flow-temp">
+                  <option value="">Select...</option>
+                  <option value="55">55°C (Heat pump compatible)</option>
+                  <option value="60">60°C (Low temp)</option>
+                  <option value="70">70°C (Standard)</option>
+                  <option value="80">80°C (High temp)</option>
+                </select>
+              </div>
+              <div>
+                <label>Calculated Heat Loss (kW)</label>
+                <input id="heat-loss-result" type="number" step="0.1" readonly placeholder="Auto-calculated" style="background: #f8fafc;" />
+              </div>
+              <div style="display: flex; align-items: flex-end;">
+                <button type="button" id="calculate-heat-loss-btn" class="btn btn-secondary" style="width: 100%;">
+                  🔢 Calculate Heat Loss
+                </button>
+              </div>
+            </div>
+
+            <!-- EPC Section -->
+            <h5 style="margin-top: 16px; margin-bottom: 8px;">📄 EPC Data</h5>
+            <div class="survey-grid">
+              <div>
+                <label>Search EPC Register</label>
+                <div style="display: flex; gap: 8px;">
+                  <input id="epc-postcode" type="text" placeholder="Enter postcode" style="flex: 1;" />
+                  <button type="button" id="search-epc-btn" class="btn btn-secondary">Search</button>
+                </div>
+                <small class="hint">Or <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener">search EPC register directly</a></small>
+              </div>
+              <div>
+                <label>Upload EPC Certificate</label>
+                <input type="file" id="epc-upload" accept=".pdf,.jpg,.jpeg,.png" />
+                <small class="hint">Upload PDF or image to auto-extract data</small>
+              </div>
+            </div>
+            <div id="epc-data-display" style="display: none; padding: 12px; background: #f0fdf4; border-radius: 8px; margin-top: 12px; border-left: 4px solid #10b981;">
+              <!-- EPC data will be displayed here when loaded -->
+            </div>
+
             <h4>Customer priorities</h4>
             <div class="survey-chip-row">
               <label><input type="checkbox" value="running-costs" /> Reduce running costs</label>
@@ -1228,6 +1518,120 @@
           <div id="survey-tab-safety" class="survey-tab-panel">
             <h3>Safety</h3>
 
+            <!-- Common Safety Issues -->
+            <h4>⚠️ Common Safety Issues in the Home</h4>
+            <div class="survey-grid">
+              <div style="grid-column: 1 / -1;">
+                <div class="survey-chip-row" style="flex-wrap: wrap; gap: 12px;">
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="carbon-monoxide" /> CO alarm missing/faulty
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="smoke-alarms" /> Smoke alarms missing/faulty
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="ventilation-blocked" /> Ventilation blocked
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="flue-damage" /> Flue damage/deterioration
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="boiler-condemned" /> Boiler condemned/RIDDOR
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="asbestos" /> Asbestos suspected
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="legionella-risk" /> Legionella risk (unused outlets)
+                  </label>
+                  <label style="background: #fef2f2; padding: 8px 12px; border-radius: 8px; border: 1px solid #fecaca;">
+                    <input type="checkbox" name="safety-issues" value="scalding-risk" /> Scalding risk (no TMVs)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Working at Heights -->
+            <h4>🪜 Working at Heights</h4>
+            <div class="survey-grid">
+              <div>
+                <label>Ladder Work Required</label>
+                <div class="survey-chip-row">
+                  <label><input type="checkbox" name="ladder-work" value="step-ladder" /> Step ladder (under 3m)</label>
+                  <label><input type="checkbox" name="ladder-work" value="extension-ladder" /> Extension ladder</label>
+                  <label><input type="checkbox" name="ladder-work" value="loft-ladder" /> Loft ladder access</label>
+                  <label><input type="checkbox" name="ladder-work" value="cat-ladder" /> Cat ladder / roof ladder</label>
+                </div>
+              </div>
+              <div>
+                <label>Other Access Equipment</label>
+                <div class="survey-chip-row">
+                  <label><input type="checkbox" name="access-equipment" value="scaffold-tower" /> Scaffold tower needed</label>
+                  <label><input type="checkbox" name="access-equipment" value="scaffold-full" /> Full scaffolding needed</label>
+                  <label><input type="checkbox" name="access-equipment" value="cherry-picker" /> Cherry picker / MEWP</label>
+                  <label><input type="checkbox" name="access-equipment" value="harness" /> Harness / fall arrest required</label>
+                </div>
+              </div>
+              <div>
+                <label>Roof Access Concerns</label>
+                <div class="survey-chip-row">
+                  <label><input type="checkbox" name="roof-concerns" value="fragile" /> Fragile roof materials</label>
+                  <label><input type="checkbox" name="roof-concerns" value="steep-pitch" /> Steep pitch</label>
+                  <label><input type="checkbox" name="roof-concerns" value="moss-slippery" /> Moss / slippery surface</label>
+                  <label><input type="checkbox" name="roof-concerns" value="no-edge-protection" /> No edge protection</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Electrical Safety -->
+            <h4>⚡ Electrical Safety Checks</h4>
+            <div class="survey-grid">
+              <div>
+                <label>Earthing System Type</label>
+                <div class="survey-chip-row" style="flex-wrap: wrap; gap: 16px;">
+                  <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                    <input type="radio" name="earthing-system" value="TN" style="margin-bottom: 8px;" />
+                    <img src="Assets/TN.JPG" alt="TN System" style="max-width: 120px; border-radius: 4px;" />
+                    <span style="margin-top: 8px; font-weight: 600;">TN System</span>
+                    <small style="color: var(--muted); text-align: center;">Earth from supply (most common)</small>
+                  </label>
+                  <label style="display: flex; flex-direction: column; align-items: center; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer;">
+                    <input type="radio" name="earthing-system" value="TT" style="margin-bottom: 8px;" />
+                    <img src="Assets/TT.JPG" alt="TT System" style="max-width: 120px; border-radius: 4px;" />
+                    <span style="margin-top: 8px; font-weight: 600;">TT System</span>
+                    <small style="color: var(--muted); text-align: center;">Local earth electrode</small>
+                  </label>
+                </div>
+              </div>
+              <div>
+                <label>Earth Impedance (Ω)</label>
+                <div class="survey-chip-row">
+                  <label><input type="radio" name="earth-impedance" value="under-1" /> &lt;1Ω (Excellent)</label>
+                  <label><input type="radio" name="earth-impedance" value="1-2" /> 1-2Ω (Good)</label>
+                  <label><input type="radio" name="earth-impedance" value="2-100" /> 2-100Ω (Acceptable TT)</label>
+                  <label><input type="radio" name="earth-impedance" value="100-200" /> 100-200Ω (Marginal)</label>
+                  <label style="background: #fef2f2; padding: 4px 8px; border-radius: 4px;">
+                    <input type="radio" name="earth-impedance" value="over-200" /> &gt;200Ω (FAIL)
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="survey-grid" style="margin-top: 12px;">
+              <div>
+                <label>Electrics &amp; Isolation</label>
+                <div class="survey-chip-row">
+                  <label><input type="checkbox" name="electrics" value="spur-present" /> Fused spur present</label>
+                  <label><input type="checkbox" name="electrics" value="isolator-accessible" /> Accessible isolator</label>
+                  <label><input type="checkbox" name="electrics" value="bonding-ok" /> Cross bonding OK</label>
+                  <label><input type="checkbox" name="electrics" value="bonding-issues" /> Bonding issues</label>
+                  <label><input type="checkbox" name="electrics" value="rcd-protection" /> RCD protection present</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gas Safety (minimal - only if signs of leaking) -->
+            <h4>🔥 Gas Supply</h4>
             <div class="survey-grid">
               <div>
                 <label>Gas meter location</label>
@@ -1237,41 +1641,41 @@
                   <label><input type="radio" name="gas-meter-location" value="cupboard" /> In cupboard</label>
                 </div>
               </div>
-
               <div>
                 <label>Gas pipe size (main run)</label>
                 <div class="survey-chip-row">
                   <label><input type="radio" name="gas-pipe-size" value="15" /> 15 mm</label>
                   <label><input type="radio" name="gas-pipe-size" value="22" /> 22 mm</label>
                   <label><input type="radio" name="gas-pipe-size" value="28" /> 28 mm</label>
-                  <label><input type="radio" name="gas-pipe-size" value="unknown" /> Don't know</label>
+                  <label><input type="radio" name="gas-pipe-size" value="unknown" /> Unknown</label>
                 </div>
               </div>
-
               <div>
-                <label>Working at heights</label>
+                <label style="color: #dc2626;">⚠️ Signs of Gas Leak (only if observed)</label>
                 <div class="survey-chip-row">
-                  <label><input type="checkbox" value="ladder" /> Ladder required</label>
-                  <label><input type="checkbox" value="roof-access" /> Roof access</label>
-                  <label><input type="checkbox" value="unsafe-surfaces" /> Unsafe surfaces</label>
+                  <label style="background: #fef2f2; padding: 4px 8px; border-radius: 4px;">
+                    <input type="checkbox" name="gas-leak-signs" value="smell" /> Gas smell detected
+                  </label>
+                  <label style="background: #fef2f2; padding: 4px 8px; border-radius: 4px;">
+                    <input type="checkbox" name="gas-leak-signs" value="dead-vegetation" /> Dead vegetation near pipe
+                  </label>
+                  <label style="background: #fef2f2; padding: 4px 8px; border-radius: 4px;">
+                    <input type="checkbox" name="gas-leak-signs" value="hissing" /> Hissing sound
+                  </label>
                 </div>
               </div>
+            </div>
 
+            <!-- Environmental / Access Hazards -->
+            <h4>🚧 Environmental / Access Hazards</h4>
+            <div class="survey-grid">
               <div>
-                <label>Electrics &amp; isolation</label>
+                <label>Access hazards</label>
                 <div class="survey-chip-row">
-                  <label><input type="checkbox" value="spur-present" /> Fused spur present</label>
-                  <label><input type="checkbox" value="isolator-accessible" /> Accessible isolator</label>
-                  <label><input type="checkbox" value="bonding-issues" /> Bonding issues suspected</label>
-                </div>
-              </div>
-
-              <div>
-                <label>Environmental / access hazards</label>
-                <div class="survey-chip-row">
-                  <label><input type="checkbox" value="asbestos" /> Asbestos suspected</label>
-                  <label><input type="checkbox" value="restricted-loft" /> Restricted loft</label>
-                  <label><input type="checkbox" value="tight-cupboard" /> Tight cupboard</label>
+                  <label><input type="checkbox" name="access-hazards" value="restricted-loft" /> Restricted loft</label>
+                  <label><input type="checkbox" name="access-hazards" value="tight-cupboard" /> Tight cupboard</label>
+                  <label><input type="checkbox" name="access-hazards" value="loft-over-stairs" /> Loft hatch over stairs</label>
+                  <label><input type="checkbox" name="access-hazards" value="narrow-passages" /> Narrow passages</label>
                 </div>
               </div>
             </div>
@@ -1325,11 +1729,28 @@
               <div>
                 <label>Cylinder</label>
                 <div class="survey-chip-row">
-                  <label><input type="radio" name="existing-cylinder" value="none" /> None</label>
-                  <label><input type="radio" name="existing-cylinder" value="vented" /> Vented cylinder</label>
-                  <label><input type="radio" name="existing-cylinder" value="unvented" /> Unvented cylinder</label>
-                  <label><input type="radio" name="existing-cylinder" value="thermal-store" /> Thermal store / Gledhill</label>
-                  <label><input type="radio" name="existing-cylinder" value="mixergy" /> Mixergy</label>
+                  <label><input type="radio" name="existing-cylinder" value="none" /> N/A</label>
+                  <label><input type="radio" name="existing-cylinder" value="unvented" /> Unvented</label>
+                  <label><input type="radio" name="existing-cylinder" value="open-vented" /> Open Vented</label>
+                  <label><input type="radio" name="existing-cylinder" value="combi-cylinder" /> Combi Cylinder</label>
+                  <label><input type="radio" name="existing-cylinder" value="thermal-store" /> Thermal Store</label>
+                </div>
+              </div>
+              <div>
+                <label>Coils</label>
+                <div class="survey-chip-row">
+                  <label><input type="radio" name="cylinder-coils" value="none" /> None</label>
+                  <label><input type="radio" name="cylinder-coils" value="single" /> Single</label>
+                  <label><input type="radio" name="cylinder-coils" value="twin" /> Twin</label>
+                </div>
+              </div>
+              <div id="second-heat-source-section" style="display: none;">
+                <label>Second Heat Source (Twin Coil)</label>
+                <div class="survey-chip-row">
+                  <label><input type="radio" name="second-heat-source" value="solar-thermal" /> Solar Thermal</label>
+                  <label><input type="radio" name="second-heat-source" value="aga" /> Aga / Range</label>
+                  <label><input type="radio" name="second-heat-source" value="heat-pump" /> Heat Pump</label>
+                  <label><input type="radio" name="second-heat-source" value="other" /> Other</label>
                 </div>
               </div>
 
@@ -1726,6 +2147,7 @@
   <script type="module" src="./js/uiEnhancements.js"></script>
   <script type="module" src="./js/mainIntegration.js"></script>
   <script type="module" src="./js/surveyIntegration.js"></script>
+  <script type="module" src="./js/diary.js"></script>
 
   <!-- Main application -->
   <script src="js/main.js" type="module"></script>
