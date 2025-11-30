@@ -51,6 +51,8 @@ const AGE_DEFAULTS = {
   '2013-present': { walls: 'modern-insulated', glazing: 'modern-double', roof: '270mm+', floor: 'solid-insulated' }
 };
 
+const AVERAGE_WINDOW_TO_WALL_RATIO = 0.18;
+
 /**
  * Store diary data in session state
  */
@@ -173,10 +175,80 @@ export function syncDiaryToSurvey() {
   updateFormField('cylinderType', diaryData.cylinderType);
 }
 
+function computeHeatLossMeasurements() {
+  const width = parseFloat(document.getElementById('property-width')?.value) || 0;
+  const length = parseFloat(document.getElementById('property-length')?.value) || 0;
+  const ceilingHeight = parseFloat(document.getElementById('ceiling-height')?.value) || 0;
+
+  const footprintArea = width > 0 && length > 0 ? width * length : 0;
+  const perimeter = width > 0 && length > 0 ? 2 * (width + length) : 0;
+  const derivedWallArea = perimeter && ceilingHeight ? perimeter * ceilingHeight : 0;
+  const derivedRoofArea = footprintArea;
+  const derivedFloorArea = footprintArea;
+  const derivedWindowArea = derivedWallArea ? derivedWallArea * AVERAGE_WINDOW_TO_WALL_RATIO : 0;
+
+  const wallAreaInput = parseFloat(document.getElementById('wall-area')?.value) || 0;
+  const roofAreaInput = parseFloat(document.getElementById('roof-area')?.value) || 0;
+  const floorAreaInput = parseFloat(document.getElementById('ground-floor-area')?.value) || 0;
+  const windowAreaInput = parseFloat(document.getElementById('window-area')?.value) || 0;
+
+  return {
+    width,
+    length,
+    ceilingHeight,
+    footprintArea,
+    wallArea: derivedWallArea || wallAreaInput,
+    roofArea: derivedRoofArea || roofAreaInput,
+    floorArea: derivedFloorArea || floorAreaInput,
+    windowArea: derivedWindowArea || windowAreaInput,
+    derived: {
+      wallArea: derivedWallArea,
+      roofArea: derivedRoofArea,
+      floorArea: derivedFloorArea,
+      windowArea: derivedWindowArea
+    }
+  };
+}
+
+function updateHeatLossMeasurementFields() {
+  const measurements = computeHeatLossMeasurements();
+
+  const applyValue = (id, value) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (value) {
+      el.value = value.toFixed(1);
+    } else if (!measurements.width || !measurements.length) {
+      el.value = '';
+    }
+  };
+
+  applyValue('ground-floor-area', measurements.floorArea);
+  applyValue('roof-area', measurements.roofArea);
+  applyValue('wall-area', measurements.wallArea);
+  applyValue('window-area', measurements.windowArea);
+
+  const footprintEl = document.getElementById('footprint-area-display');
+  if (footprintEl) {
+    footprintEl.textContent = measurements.footprintArea ? `${measurements.footprintArea.toFixed(1)} m²` : '—';
+  }
+
+  const glazingEl = document.getElementById('glazing-ratio-display');
+  if (glazingEl) {
+    glazingEl.textContent = measurements.derived.windowArea
+      ? `${(AVERAGE_WINDOW_TO_WALL_RATIO * 100).toFixed(0)}% of wall area`
+      : 'Awaiting dimensions';
+  }
+
+  return measurements;
+}
+
 /**
  * Calculate heat loss based on property measurements and U-values
  */
 export function calculateHeatLoss() {
+  const measurements = updateHeatLossMeasurementFields();
+
   // Get U-values from selections
   const wallConstruction = document.getElementById('wall-construction')?.value;
   const glazingType = document.getElementById('glazing-type')?.value;
@@ -184,10 +256,11 @@ export function calculateHeatLoss() {
   const floorInsulation = document.getElementById('floor-insulation')?.value;
 
   // Get areas
-  const wallArea = parseFloat(document.getElementById('wall-area')?.value) || 0;
-  const windowArea = parseFloat(document.getElementById('window-area')?.value) || 0;
-  const roofArea = parseFloat(document.getElementById('roof-area')?.value) || 0;
-  const floorArea = parseFloat(document.getElementById('ground-floor-area')?.value) || 0;
+  const wallArea = measurements.wallArea || 0;
+  const windowArea = measurements.windowArea || 0;
+  const roofArea = measurements.roofArea || 0;
+  const floorArea = measurements.floorArea || 0;
+  const ceilingHeight = measurements.ceilingHeight || 2.4;
 
   // Get temperature difference
   // Indoor: 21°C (standard comfort temperature)
@@ -214,7 +287,7 @@ export function calculateHeatLoss() {
 
   // Add ventilation heat loss (approximate)
   // Assume 0.5 air changes per hour, volume = floor area * 2.4m ceiling height
-  const volume = floorArea * 2.4;
+  const volume = floorArea * ceilingHeight;
   const airChanges = 0.5;
   const ventilationLoss = 0.33 * volume * airChanges * deltaT;
 
@@ -236,7 +309,13 @@ export function calculateHeatLoss() {
     fabric: totalFabricLoss / 1000,
     ventilation: ventilationLoss / 1000,
     wallU, glazingU, roofU, floorU,
-    areas: { wall: wallArea, window: windowArea, roof: roofArea, floor: floorArea }
+    dimensions: {
+      width: measurements.width,
+      length: measurements.length,
+      ceilingHeight: measurements.ceilingHeight
+    },
+    areas: { wall: wallArea, window: windowArea, roof: roofArea, floor: floorArea },
+    flowTemp: flowTemp
   };
 
   return finalHeatLoss;
@@ -321,6 +400,35 @@ export async function exportJobWithFolderStructure(jobData, contentType, content
   return filename;
 }
 
+function parseEpcText(text) {
+  if (!text) {
+    return { rating: '', recommendations: [], heatLoss: null, currentSystem: '' };
+  }
+
+  const ratingMatch = text.match(/energy\s*rating\s*[:\-]?\s*([A-G][0-9+\s]*)/i);
+  const heatLossMatch = text.match(/heat\s*-?\s*loss[^\d]*([0-9]+(?:\.[0-9]+)?)/i);
+  const heatingMatch = text.match(/(main\s*heating|heating\s*system)[^:\n]*[:\-]\s*([^\n\r]+)/i);
+
+  const recommendationMatches = [...text.matchAll(/(?:recommendation|improvement)\s*\d*[:\-]?\s*([^\n\r]+)/gi)]
+    .map(m => m[1].trim())
+    .filter(Boolean);
+
+  if (recommendationMatches.length === 0) {
+    const bulletLines = text.split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(line => line.startsWith('•') || line.startsWith('-'))
+      .map(line => line.replace(/^[-•]\s*/, ''));
+    recommendationMatches.push(...bulletLines);
+  }
+
+  return {
+    rating: ratingMatch ? ratingMatch[1].trim() : '',
+    recommendations: recommendationMatches.slice(0, 6),
+    heatLoss: heatLossMatch ? parseFloat(heatLossMatch[1]) : null,
+    currentSystem: heatingMatch ? heatingMatch[2].trim() : ''
+  };
+}
+
 /**
  * Initialize diary module event listeners
  */
@@ -393,6 +501,13 @@ export function initDiary() {
     });
   }
 
+  ['property-width', 'property-length', 'ceiling-height'].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) {
+      input.addEventListener('input', updateHeatLossMeasurementFields);
+    }
+  });
+
   // Calculate heat loss button
   const calcBtn = document.getElementById('calculate-heat-loss-btn');
   if (calcBtn) {
@@ -429,6 +544,8 @@ export function initDiary() {
     console.warn('Could not load saved diary data:', e);
   }
 
+  updateHeatLossMeasurementFields();
+
   console.log('[Diary] Module initialized');
 }
 
@@ -446,25 +563,61 @@ async function handleEpcUpload(event) {
   displayEl.innerHTML = '<p>Processing EPC document...</p>';
 
   try {
-    // For now, just show that file was uploaded
-    // In a real implementation, this would use OCR or PDF parsing
-    displayEl.innerHTML = `
-      <h5 style="margin: 0 0 8px 0; color: #10b981;">📄 EPC Uploaded: ${file.name}</h5>
-      <p style="margin: 0; color: var(--muted); font-size: 0.9rem;">
-        Manual entry required. Please review the certificate and enter values in the U-value dropdowns above.
-      </p>
-      <p style="margin: 8px 0 0 0; font-size: 0.85rem;">
-        <strong>Tip:</strong> Look for the "Main heating" and "Walls", "Roof", "Floor", "Windows" sections in the EPC.
-      </p>
-    `;
+    const fileText = await file.text();
+    const epcData = parseEpcText(fileText);
 
-    // Store file reference in session
-    sessionState.epcFile = {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      uploadedAt: new Date().toISOString()
+    sessionState.epc = {
+      file: {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        uploadedAt: new Date().toISOString()
+      },
+      rating: epcData.rating,
+      recommendations: epcData.recommendations,
+      heatLoss: epcData.heatLoss,
+      currentSystem: epcData.currentSystem
     };
+
+    if (epcData.heatLoss) {
+      const heatLossField = document.getElementById('heat-loss-result');
+      if (heatLossField && !heatLossField.value) {
+        heatLossField.value = epcData.heatLoss.toFixed(1);
+      }
+      sessionState.heatLoss.calculated = sessionState.heatLoss.calculated || epcData.heatLoss;
+    }
+
+    displayEl.innerHTML = `
+      <div class="epc-meta">
+        <div>
+          <p class="epc-label">File</p>
+          <p class="epc-value">${file.name}</p>
+        </div>
+        <div>
+          <p class="epc-label">Energy Rating</p>
+          <p class="epc-value">${epcData.rating || 'Not detected'}</p>
+        </div>
+      </div>
+      <div class="epc-grid">
+        <div class="epc-card">
+          <p class="epc-label">Heat loss</p>
+          <p class="epc-highlight">${epcData.heatLoss ? `${epcData.heatLoss.toFixed(1)} kW` : 'Not found'}</p>
+          <p class="epc-muted">Auto-filled from EPC document</p>
+        </div>
+        <div class="epc-card">
+          <p class="epc-label">Current system</p>
+          <p class="epc-highlight">${epcData.currentSystem || 'Not detected'}</p>
+          <p class="epc-muted">Parsed from main heating description</p>
+        </div>
+        <div class="epc-card">
+          <p class="epc-label">Recommendations</p>
+          ${epcData.recommendations.length
+            ? `<ul class="epc-list">${epcData.recommendations.map(r => `<li>${r}</li>`).join('')}</ul>`
+            : '<p class="epc-muted">No recommendations detected in the document.</p>'}
+        </div>
+      </div>
+      <p class="epc-note">Heat loss data feeds the calculator above. Recommendations and existing system are kept with the survey record.</p>
+    `;
   } catch (error) {
     console.error('EPC upload error:', error);
     displayEl.innerHTML = `<p style="color: var(--danger);">Error processing file: ${error.message}</p>`;

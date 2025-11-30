@@ -912,6 +912,91 @@
       color: #059669;
       margin-top: 4px;
     }
+
+    .calc-pill {
+      background: #f1f5f9;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 700;
+      text-align: center;
+      color: #0f172a;
+    }
+
+    input[readonly] {
+      background: #f8fafc;
+      color: #0f172a;
+      border-color: var(--border);
+    }
+
+    .epc-display {
+      padding: 12px;
+      background: #f0fdf4;
+      border-radius: 12px;
+      margin-top: 12px;
+      border: 1px solid #bbf7d0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .epc-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .epc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .epc-card {
+      background: #fff;
+      border: 1px solid #d9f99d;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .epc-label {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+    }
+
+    .epc-value {
+      margin: 2px 0 0 0;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .epc-highlight {
+      margin: 4px 0;
+      font-weight: 800;
+      color: #166534;
+      font-size: 1.05rem;
+    }
+
+    .epc-muted {
+      margin: 0;
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+
+    .epc-list {
+      margin: 4px 0 0 16px;
+      color: #0f172a;
+      line-height: 1.4;
+    }
+
+    .epc-note {
+      margin: 10px 0 0 0;
+      color: #166534;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -1388,6 +1473,27 @@
               </div>
             </div>
 
+            <!-- EPC Section -->
+            <h5 style="margin-top: 16px; margin-bottom: 8px;">📄 EPC Data</h5>
+            <div class="survey-grid">
+              <div>
+                <label>Search EPC Register</label>
+                <div style="display: flex; gap: 8px;">
+                  <input id="epc-postcode" type="text" placeholder="Enter postcode" style="flex: 1;" />
+                  <button type="button" id="search-epc-btn" class="btn btn-secondary">Search</button>
+                </div>
+                <small class="hint">Or <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener">search EPC register directly</a></small>
+              </div>
+              <div>
+                <label>Upload EPC Certificate</label>
+                <input type="file" id="epc-upload" accept=".pdf,.jpg,.jpeg,.png,.txt,.json" />
+                <small class="hint">Parses heat loss, current system and recommendations</small>
+              </div>
+            </div>
+            <div id="epc-data-display" class="epc-display" style="display: none;">
+              <!-- EPC data will be displayed here when loaded -->
+            </div>
+
             <h5 style="margin-top: 16px; margin-bottom: 8px;">U-Values</h5>
             <div class="survey-grid">
               <div>
@@ -1439,20 +1545,40 @@
             <h5 style="margin-top: 16px; margin-bottom: 8px;">Measurements</h5>
             <div class="survey-grid">
               <div>
+                <label>Property Width (m)</label>
+                <input id="property-width" type="number" min="0" step="0.1" placeholder="Measure external width" />
+              </div>
+              <div>
+                <label>Property Length (m)</label>
+                <input id="property-length" type="number" min="0" step="0.1" placeholder="Measure external length" />
+              </div>
+              <div>
+                <label>Ceiling Height (m)</label>
+                <input id="ceiling-height" type="number" min="0" step="0.1" placeholder="Average ceiling height" />
+              </div>
+              <div>
+                <label>Footprint (calculated)</label>
+                <div class="calc-pill" id="footprint-area-display">—</div>
+              </div>
+            </div>
+
+            <div class="survey-grid" style="margin-top: 12px;">
+              <div>
                 <label>External Wall Area (m²)</label>
-                <input id="wall-area" type="number" min="0" step="0.1" placeholder="Total external wall area" />
+                <input id="wall-area" type="number" min="0" step="0.1" placeholder="Auto from dimensions" readonly />
               </div>
               <div>
                 <label>Window Area (m²)</label>
-                <input id="window-area" type="number" min="0" step="0.1" placeholder="Total window area" />
+                <input id="window-area" type="number" min="0" step="0.1" placeholder="Auto from average glazing" readonly />
+                <small class="hint" id="glazing-ratio-display">Awaiting dimensions</small>
               </div>
               <div>
                 <label>Roof Area (m²)</label>
-                <input id="roof-area" type="number" min="0" step="0.1" placeholder="Roof area" />
+                <input id="roof-area" type="number" min="0" step="0.1" placeholder="Auto from footprint" readonly />
               </div>
               <div>
                 <label>Floor Area (m²)</label>
-                <input id="ground-floor-area" type="number" min="0" step="0.1" placeholder="Ground floor area" />
+                <input id="ground-floor-area" type="number" min="0" step="0.1" placeholder="Auto from footprint" readonly />
               </div>
             </div>
 
@@ -1476,27 +1602,6 @@
                   🔢 Calculate Heat Loss
                 </button>
               </div>
-            </div>
-
-            <!-- EPC Section -->
-            <h5 style="margin-top: 16px; margin-bottom: 8px;">📄 EPC Data</h5>
-            <div class="survey-grid">
-              <div>
-                <label>Search EPC Register</label>
-                <div style="display: flex; gap: 8px;">
-                  <input id="epc-postcode" type="text" placeholder="Enter postcode" style="flex: 1;" />
-                  <button type="button" id="search-epc-btn" class="btn btn-secondary">Search</button>
-                </div>
-                <small class="hint">Or <a href="https://www.gov.uk/find-energy-certificate" target="_blank" rel="noopener">search EPC register directly</a></small>
-              </div>
-              <div>
-                <label>Upload EPC Certificate</label>
-                <input type="file" id="epc-upload" accept=".pdf,.jpg,.jpeg,.png" />
-                <small class="hint">Upload PDF or image to auto-extract data</small>
-              </div>
-            </div>
-            <div id="epc-data-display" style="display: none; padding: 12px; background: #f0fdf4; border-radius: 8px; margin-top: 12px; border-left: 4px solid #10b981;">
-              <!-- EPC data will be displayed here when loaded -->
             </div>
 
             <h4>Customer priorities</h4>
