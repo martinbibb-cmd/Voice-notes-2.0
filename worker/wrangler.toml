@@ -1,0 +1,22 @@
+name = "voice-notes-worker"
+main = "index.js"
+compatibility_date = "2024-11-01"
+
+# Environment variables (set via Cloudflare dashboard or wrangler secret put)
+# ANTHROPIC_API_KEY - Anthropic Claude API key
+# OPENAI_API_KEY - OpenAI API key
+# TOGETHER_API_KEY - Together AI API key
+
+# Optional: D1 Database binding for session storage
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "voice-notes-db"
+# database_id = "your-database-id"
+
+# Optional: KV Namespace for session storage (alternative to D1)
+# [[kv_namespaces]]
+# binding = "SESSIONS"
+# id = "your-kv-namespace-id"
+
+[vars]
+ENVIRONMENT = "production"
