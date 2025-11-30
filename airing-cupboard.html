@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Airing Cupboard Components</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #fff;
+      --border: #d1d5db;
+      --accent: #667eea;
+      --accent-hover: #5a67d8;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, system-ui, "Segoe UI", sans-serif;
+      background: var(--bg);
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 14px auto;
+      background: #fff;
+      border: 1.5px solid #000;
+      border-radius: 26px;
+      padding: 18px 22px 24px;
+    }
+    header {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .home-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .home-btn:hover {
+      background: var(--accent-hover);
+    }
+    h1 {
+      font-size: 26px;
+      color: var(--accent);
+      margin: 0;
+    }
+    .section {
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 12px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .option-tile {
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-tile:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.15);
+    }
+    .option-tile.active {
+      border-color: var(--accent);
+      background: linear-gradient(to right, rgba(102,126,234,0.08), rgba(118,75,162,0.08));
+    }
+    .option-tile .icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+    .option-tile .label {
+      font-weight: 600;
+      font-size: 13px;
+      color: #374151;
+    }
+    .option-tile .sublabel {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 3px;
+    }
+    .option-tile.warning {
+      border-color: var(--warning);
+      background: rgba(245,158,11,0.05);
+    }
+    .option-tile.warning.active {
+      background: rgba(245,158,11,0.15);
+    }
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+    }
+    .size-tile {
+      background: #fff;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .size-tile:hover {
+      border-color: var(--accent);
+    }
+    .size-tile.active {
+      border-color: var(--accent);
+      background: rgba(102,126,234,0.1);
+    }
+    .size-tile .value {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--accent);
+    }
+    .size-tile .unit {
+      font-size: 11px;
+      color: #6b7280;
+    }
+    .valve-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .subsection {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+    }
+    .subsection-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin: 0 0 10px 0;
+    }
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-secondary {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .btn-primary {
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #fff;
+      transition: all 0.2s;
+    }
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+    .selected-panel {
+      margin-top: 24px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .selected-panel h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      color: var(--accent);
+    }
+    .pills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .pill {
+      display: inline-block;
+      background: #eff6ff;
+      color: #1e40af;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .pill.cylinder { background: #dcfce7; color: #166534; }
+    .pill.pump { background: #fef3c7; color: #92400e; }
+    .pill.valve { background: #e0e7ff; color: #3730a3; }
+    .pill.misc { background: #f3e8ff; color: #6b21a8; }
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      min-height: 100px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      background: #f9fafb;
+      padding: 8px;
+    }
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .qty-btn {
+      width: 24px;
+      height: 24px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .qty-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .qty-value {
+      min-width: 24px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    @media (max-width: 600px) {
+      .wrap { border-radius: 0; }
+      header { flex-wrap: wrap; }
+      .options-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <button class="home-btn" onclick="window.location.href='index.html'">← Back to App</button>
+      <h1>🚿 Airing Cupboard Components</h1>
+    </header>
+
+    <!-- CYLINDERS SECTION -->
+    <div class="section">
+      <h3 class="section-title">🛢️ Hot Water Cylinders</h3>
+      
+      <div class="subsection">
+        <h4 class="subsection-title">Cylinder Type</h4>
+        <div class="options-grid" id="cylinder-type">
+          <div class="option-tile" data-category="cylinder" data-option="Vented cylinder (indirect)">
+            <div class="icon">🔵</div>
+            <div class="label">Vented Indirect</div>
+            <div class="sublabel">With F&E tank</div>
+          </div>
+          <div class="option-tile" data-category="cylinder" data-option="Vented cylinder (direct)">
+            <div class="icon">🔵</div>
+            <div class="label">Vented Direct</div>
+            <div class="sublabel">Immersion only</div>
+          </div>
+          <div class="option-tile" data-category="cylinder" data-option="Unvented cylinder">
+            <div class="icon">🔴</div>
+            <div class="label">Unvented</div>
+            <div class="sublabel">Mains pressure</div>
+          </div>
+          <div class="option-tile" data-category="cylinder" data-option="Thermal store">
+            <div class="icon">🟠</div>
+            <div class="label">Thermal Store</div>
+            <div class="sublabel">Heat battery</div>
+          </div>
+          <div class="option-tile" data-category="cylinder" data-option="Mixergy cylinder">
+            <div class="icon">🟢</div>
+            <div class="label">Mixergy</div>
+            <div class="sublabel">Smart cylinder</div>
+          </div>
+          <div class="option-tile" data-category="cylinder" data-option="Heat pump cylinder">
+            <div class="icon">💚</div>
+            <div class="label">Heat Pump Spec</div>
+            <div class="sublabel">Large coil</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h4 class="subsection-title">Cylinder Size (Litres)</h4>
+        <div class="size-grid" id="cylinder-size">
+          <div class="size-tile" data-category="cylinder" data-option="90L cylinder">
+            <div class="value">90</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="120L cylinder">
+            <div class="value">120</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="150L cylinder">
+            <div class="value">150</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="180L cylinder">
+            <div class="value">180</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="210L cylinder">
+            <div class="value">210</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="250L cylinder">
+            <div class="value">250</div>
+            <div class="unit">litres</div>
+          </div>
+          <div class="size-tile" data-category="cylinder" data-option="300L cylinder">
+            <div class="value">300</div>
+            <div class="unit">litres</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUMPS SECTION -->
+    <div class="section">
+      <h3 class="section-title">⚡ Pumps</h3>
+      <div class="options-grid" id="pumps">
+        <div class="option-tile" data-category="pump" data-option="Central heating pump">
+          <div class="icon">🔄</div>
+          <div class="label">CH Pump</div>
+          <div class="sublabel">Standard circulator</div>
+        </div>
+        <div class="option-tile" data-category="pump" data-option="A-rated pump">
+          <div class="icon">🅰️</div>
+          <div class="label">A-Rated Pump</div>
+          <div class="sublabel">Energy efficient</div>
+        </div>
+        <div class="option-tile" data-category="pump" data-option="Twin pump">
+          <div class="icon">🔄🔄</div>
+          <div class="label">Twin Pump</div>
+          <div class="sublabel">Dual circulator</div>
+        </div>
+        <div class="option-tile" data-category="pump" data-option="Secondary return pump">
+          <div class="icon">♻️</div>
+          <div class="label">Secondary Pump</div>
+          <div class="sublabel">Hot water return</div>
+        </div>
+        <div class="option-tile" data-category="pump" data-option="Shower pump">
+          <div class="icon">🚿</div>
+          <div class="label">Shower Pump</div>
+          <div class="sublabel">Boost pressure</div>
+        </div>
+        <div class="option-tile" data-category="pump" data-option="Whole house pump">
+          <div class="icon">🏠</div>
+          <div class="label">Whole House</div>
+          <div class="sublabel">Mains booster</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUMP VALVES SECTION -->
+    <div class="section">
+      <h3 class="section-title">🔧 Pump Valves & Accessories</h3>
+      <div class="options-grid" id="pump-valves">
+        <div class="option-tile" data-category="valve" data-option="Pump valve set 22mm">
+          <div class="icon">🔩</div>
+          <div class="label">Pump Valves 22mm</div>
+          <div class="sublabel">Isolation set</div>
+        </div>
+        <div class="option-tile" data-category="valve" data-option="Pump valve set 28mm">
+          <div class="icon">🔩</div>
+          <div class="label">Pump Valves 28mm</div>
+          <div class="sublabel">Isolation set</div>
+        </div>
+        <div class="option-tile" data-category="valve" data-option="Auto air vent">
+          <div class="icon">💨</div>
+          <div class="label">Auto Air Vent</div>
+          <div class="sublabel">Automatic bleed</div>
+        </div>
+        <div class="option-tile" data-category="valve" data-option="Automatic bypass valve">
+          <div class="icon">↔️</div>
+          <div class="label">Auto Bypass</div>
+          <div class="sublabel">Pressure relief</div>
+        </div>
+        <div class="option-tile" data-category="valve" data-option="Manual bypass valve">
+          <div class="icon">↔️</div>
+          <div class="label">Manual Bypass</div>
+          <div class="sublabel">Fixed setting</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZONE VALVES SECTION -->
+    <div class="section">
+      <h3 class="section-title">🚰 Zone Valves</h3>
+      
+      <div class="subsection">
+        <h4 class="subsection-title">2-Port Valves (22mm)</h4>
+        <div class="valve-grid" id="2port-22">
+          <div class="option-tile" data-category="valve" data-option="2-port valve 22mm (CH)">
+            <div class="icon">🔴</div>
+            <div class="label">2-Port 22mm</div>
+            <div class="sublabel">Central Heating</div>
+          </div>
+          <div class="option-tile" data-category="valve" data-option="2-port valve 22mm (HW)">
+            <div class="icon">🔵</div>
+            <div class="label">2-Port 22mm</div>
+            <div class="sublabel">Hot Water</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h4 class="subsection-title">2-Port Valves (28mm)</h4>
+        <div class="valve-grid" id="2port-28">
+          <div class="option-tile" data-category="valve" data-option="2-port valve 28mm (CH)">
+            <div class="icon">🔴</div>
+            <div class="label">2-Port 28mm</div>
+            <div class="sublabel">Central Heating</div>
+          </div>
+          <div class="option-tile" data-category="valve" data-option="2-port valve 28mm (HW)">
+            <div class="icon">🔵</div>
+            <div class="label">2-Port 28mm</div>
+            <div class="sublabel">Hot Water</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="subsection">
+        <h4 class="subsection-title">3-Port Valves</h4>
+        <div class="valve-grid" id="3port">
+          <div class="option-tile" data-category="valve" data-option="3-port mid-position valve 22mm">
+            <div class="icon">🟡</div>
+            <div class="label">Mid-Position 22mm</div>
+            <div class="sublabel">Y-Plan valve</div>
+          </div>
+          <div class="option-tile" data-category="valve" data-option="3-port mid-position valve 28mm">
+            <div class="icon">🟡</div>
+            <div class="label">Mid-Position 28mm</div>
+            <div class="sublabel">Y-Plan valve</div>
+          </div>
+          <div class="option-tile" data-category="valve" data-option="3-port diverter valve 22mm">
+            <div class="icon">🟣</div>
+            <div class="label">Diverter 22mm</div>
+            <div class="sublabel">W-Plan valve</div>
+          </div>
+          <div class="option-tile" data-category="valve" data-option="3-port diverter valve 28mm">
+            <div class="icon">🟣</div>
+            <div class="label">Diverter 28mm</div>
+            <div class="sublabel">W-Plan valve</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WIRING & CONTROLS SECTION -->
+    <div class="section">
+      <h3 class="section-title">⚡ Wiring & Controls</h3>
+      <div class="options-grid" id="wiring">
+        <div class="option-tile" data-category="misc" data-option="Wiring centre (S-plan)">
+          <div class="icon">📟</div>
+          <div class="label">Wiring Centre</div>
+          <div class="sublabel">S-Plan</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Wiring centre (Y-plan)">
+          <div class="icon">📟</div>
+          <div class="label">Wiring Centre</div>
+          <div class="sublabel">Y-Plan</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Cylinder thermostat">
+          <div class="icon">🌡️</div>
+          <div class="label">Cylinder Stat</div>
+          <div class="sublabel">Temperature control</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Pipe thermostat">
+          <div class="icon">🌡️</div>
+          <div class="label">Pipe Stat</div>
+          <div class="sublabel">Frost protection</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Programmer (2-channel)">
+          <div class="icon">⏰</div>
+          <div class="label">Programmer</div>
+          <div class="sublabel">2-channel timer</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Room thermostat">
+          <div class="icon">🏠</div>
+          <div class="label">Room Stat</div>
+          <div class="sublabel">Temperature control</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SAFETY & DISCHARGE SECTION -->
+    <div class="section">
+      <h3 class="section-title">⚠️ Safety & Discharge</h3>
+      <div class="options-grid" id="safety">
+        <div class="option-tile warning" data-category="misc" data-option="Tundish">
+          <div class="icon">🔺</div>
+          <div class="label">Tundish</div>
+          <div class="sublabel">G3 requirement</div>
+        </div>
+        <div class="option-tile warning" data-category="misc" data-option="D2 discharge pipe">
+          <div class="icon">📏</div>
+          <div class="label">D2 Pipe</div>
+          <div class="sublabel">Safe termination</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Expansion vessel">
+          <div class="icon">🎈</div>
+          <div class="label">Expansion Vessel</div>
+          <div class="sublabel">Pressure accommodation</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Pressure reducing valve">
+          <div class="icon">📉</div>
+          <div class="label">PRV</div>
+          <div class="sublabel">Mains pressure control</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Combined T&P relief valve">
+          <div class="icon">🔒</div>
+          <div class="label">T&P Valve</div>
+          <div class="sublabel">Temperature & pressure</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Filling loop">
+          <div class="icon">💧</div>
+          <div class="label">Filling Loop</div>
+          <div class="sublabel">System fill</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OTHER COMPONENTS SECTION -->
+    <div class="section">
+      <h3 class="section-title">🔧 Other Components</h3>
+      <div class="options-grid" id="other">
+        <div class="option-tile" data-category="misc" data-option="Magnetic filter">
+          <div class="icon">🧲</div>
+          <div class="label">Magnetic Filter</div>
+          <div class="sublabel">System protection</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Scale reducer">
+          <div class="icon">⚗️</div>
+          <div class="label">Scale Reducer</div>
+          <div class="sublabel">Limescale prevention</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Cold water storage tank">
+          <div class="icon">🛢️</div>
+          <div class="label">CWS Tank</div>
+          <div class="sublabel">Cold storage</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="F&E tank">
+          <div class="icon">🛢️</div>
+          <div class="label">F&E Tank</div>
+          <div class="sublabel">Feed & expansion</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Immersion heater">
+          <div class="icon">⚡</div>
+          <div class="label">Immersion</div>
+          <div class="sublabel">Electric backup</div>
+        </div>
+        <div class="option-tile" data-category="misc" data-option="Immersion timer">
+          <div class="icon">⏰</div>
+          <div class="label">Immersion Timer</div>
+          <div class="sublabel">Control switch</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-secondary" id="clear-all">🗑️ Clear All</button>
+      <button class="btn-primary" id="copy-json">📋 Copy to Clipboard</button>
+    </div>
+
+    <div class="selected-panel">
+      <h3>Selected Components</h3>
+      <div class="pills-container" id="selected-pills"></div>
+      <textarea id="selected-json" readonly placeholder="Selected components will appear here..."></textarea>
+    </div>
+  </div>
+
+  <script>
+    const selections = {
+      cylinder: [],
+      pump: [],
+      valve: [],
+      misc: []
+    };
+
+    const pills = document.getElementById('selected-pills');
+    const out = document.getElementById('selected-json');
+
+    function addSelection(category, option) {
+      if (!selections[category].includes(option)) {
+        selections[category].push(option);
+      }
+      renderSelections();
+    }
+
+    function removeSelection(category, option) {
+      const idx = selections[category].indexOf(option);
+      if (idx > -1) {
+        selections[category].splice(idx, 1);
+      }
+      renderSelections();
+    }
+
+    function toggleSelection(category, option, tile) {
+      if (selections[category].includes(option)) {
+        removeSelection(category, option);
+        tile.classList.remove('active');
+      } else {
+        addSelection(category, option);
+        tile.classList.add('active');
+      }
+    }
+
+    function renderSelections() {
+      pills.innerHTML = '';
+      
+      Object.entries(selections).forEach(([category, items]) => {
+        items.forEach(item => {
+          const span = document.createElement('span');
+          span.className = 'pill ' + category;
+          span.textContent = item;
+          pills.appendChild(span);
+        });
+      });
+
+      out.value = JSON.stringify({ airingCupboard: selections }, null, 2);
+    }
+
+    // Option tiles
+    document.querySelectorAll('.option-tile, .size-tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const category = tile.dataset.category;
+        const option = tile.dataset.option;
+        toggleSelection(category, option, tile);
+      });
+    });
+
+    // Clear button
+    document.getElementById('clear-all').addEventListener('click', () => {
+      Object.keys(selections).forEach(key => {
+        selections[key] = [];
+      });
+      document.querySelectorAll('.option-tile, .size-tile').forEach(t => t.classList.remove('active'));
+      renderSelections();
+    });
+
+    // Copy to clipboard
+    document.getElementById('copy-json').addEventListener('click', () => {
+      navigator.clipboard.writeText(out.value).then(() => {
+        alert('Copied to clipboard!');
+      }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Could not copy to clipboard. Please select and copy the text manually from the text area below.');
+      });
+    });
+
+    // Initial render
+    renderSelections();
+  </script>
+</body>
+</html>
