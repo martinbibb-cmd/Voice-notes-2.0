@@ -29,7 +29,10 @@
       chunks: [],
       lastBlob: null
     },
-    aiMessages: []
+    aiMessages: [],
+    photos: [],               // <- saved photos for step 2
+    pendingPhoto: null,       // <- photo being captured but not saved yet
+    selectedPhotoId: null     // <- which photo is selected in step 2
   };
 
   function $(id) {
@@ -438,6 +441,9 @@
       case 1:
         renderStep1(container);
         break;
+      case 2:
+        renderStep2(container);
+        break;
       default:
         renderPlaceholderStep(container, AppState.surveyStep);
         break;
@@ -557,6 +563,401 @@
 
     // Start timer UI if active
     updateRecordingStatus();
+  }
+
+  function ensureSelectedPhoto() {
+    if (!AppState.photos.length) {
+      AppState.selectedPhotoId = null;
+      return;
+    }
+    if (
+      !AppState.selectedPhotoId ||
+      !AppState.photos.some((p) => p.id === AppState.selectedPhotoId)
+    ) {
+      AppState.selectedPhotoId = AppState.photos[0].id;
+    }
+  }
+
+  function openPhotoFilePicker() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+    input.style.display = "none";
+    document.body.appendChild(input);
+
+    input.addEventListener("change", () => {
+      const file = input.files && input.files[0];
+      if (!file) {
+        document.body.removeChild(input);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result;
+        // Create pending photo record and start GPS lookup
+        AppState.pendingPhoto = {
+          id: `photo_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+          dataUrl,
+          type: "",
+          notes: "",
+          lat: null,
+          lng: null,
+          createdAt: new Date().toISOString()
+        };
+        AppState.selectedPhotoId = AppState.pendingPhoto.id;
+        capturePhotoLocation();
+        renderSurveyContent();
+      };
+      reader.onerror = () => {
+        console.error("FileReader error", reader.error);
+        alert("Failed to read the selected image file. Please try again.");
+      };
+      reader.readAsDataURL(file);
+      document.body.removeChild(input);
+    });
+
+    input.click();
+  }
+
+  function capturePhotoLocation() {
+    if (!navigator.geolocation || !AppState.pendingPhoto) {
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (!AppState.pendingPhoto) return;
+        AppState.pendingPhoto.lat = pos.coords.latitude;
+        AppState.pendingPhoto.lng = pos.coords.longitude;
+        renderSurveyContent();
+      },
+      (err) => {
+        console.warn("Geolocation error", err);
+        // Leave lat/lng null; user can still save photo without GPS.
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000
+      }
+    );
+  }
+
+  function savePendingPhoto(typeValue, notesValue) {
+    if (!AppState.pendingPhoto) return;
+    AppState.pendingPhoto.type = typeValue;
+    AppState.pendingPhoto.notes = notesValue || "";
+
+    AppState.photos.push(AppState.pendingPhoto);
+    AppState.pendingPhoto = null;
+    ensureSelectedPhoto();
+    renderSurveyContent();
+  }
+
+  function getSelectedPhoto() {
+    if (AppState.pendingPhoto && AppState.selectedPhotoId === AppState.pendingPhoto.id) {
+      return AppState.pendingPhoto;
+    }
+    return AppState.photos.find((p) => p.id === AppState.selectedPhotoId) || null;
+  }
+
+  function haversineDistanceMeters(lat1, lon1, lat2, lon2) {
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const R = 6371000; // metres
+    const φ1 = toRad(lat1);
+    const φ2 = toRad(lat2);
+    const Δφ = toRad(lat2 - lat1);
+    const Δλ = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function getBoilerPhoto() {
+    // First photo tagged as boiler or "boiler-like"
+    return (
+      AppState.photos.find((p) => (p.type || "").toLowerCase() === "boiler") ||
+      null
+    );
+  }
+
+  function renderStep2(container) {
+    ensureSelectedPhoto();
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "photos-layout";
+
+    // --- Top row: controls + thumbnails ---
+
+    const topRow = document.createElement("div");
+    topRow.className = "photos-top";
+
+    const leftControls = document.createElement("div");
+    leftControls.className = "photos-controls";
+
+    const takeBtn = document.createElement("button");
+    takeBtn.textContent = "Take photo";
+    takeBtn.className = "primary";
+    takeBtn.addEventListener("click", openPhotoFilePicker);
+    leftControls.appendChild(takeBtn);
+
+    const hint = document.createElement("p");
+    hint.className = "photos-hint";
+    hint.textContent =
+      "Capture each key part (boiler, flue, gas meter, windows, drains). GPS and type are set before saving.";
+    leftControls.appendChild(hint);
+
+    topRow.appendChild(leftControls);
+
+    const thumbStrip = document.createElement("div");
+    thumbStrip.className = "photos-thumbnails";
+
+    // Pending photo thumbnail (if any)
+    if (AppState.pendingPhoto) {
+      const ph = AppState.pendingPhoto;
+      const thumb = document.createElement("div");
+      thumb.className = "photo-thumb pending";
+      if (AppState.selectedPhotoId === ph.id) thumb.classList.add("active");
+      thumb.innerHTML = `
+        <div class="thumb-label">New (unsaved)</div>
+        <img src="${ph.dataUrl}" alt="New photo">
+      `;
+      thumb.addEventListener("click", () => {
+        AppState.selectedPhotoId = ph.id;
+        renderSurveyContent();
+      });
+      thumbStrip.appendChild(thumb);
+    }
+
+    // Saved photos thumbnails
+    AppState.photos.forEach((p) => {
+      const thumb = document.createElement("div");
+      thumb.className = "photo-thumb";
+      if (AppState.selectedPhotoId === p.id) thumb.classList.add("active");
+      thumb.innerHTML = `
+        <div class="thumb-label">${p.type || "Untyped"}</div>
+        <img src="${p.dataUrl}" alt="${p.type || "Photo"}">
+      `;
+      thumb.addEventListener("click", () => {
+        AppState.selectedPhotoId = p.id;
+        renderSurveyContent();
+      });
+      thumbStrip.appendChild(thumb);
+    });
+
+    topRow.appendChild(thumbStrip);
+    wrapper.appendChild(topRow);
+
+    // --- Middle row: large preview + annotation panel ---
+
+    const midRow = document.createElement("div");
+    midRow.className = "photos-middle";
+
+    const previewPanel = document.createElement("div");
+    previewPanel.className = "step-panel photos-preview";
+
+    const annotationPanel = document.createElement("div");
+    annotationPanel.className = "step-panel photos-annotate";
+
+    const selected = getSelectedPhoto();
+
+    if (!selected) {
+      const noPhoto = document.createElement("p");
+      noPhoto.textContent =
+        "No photos yet. Tap 'Take photo' to capture your first picture.";
+      previewPanel.appendChild(noPhoto);
+    } else {
+      const img = document.createElement("img");
+      img.src = selected.dataUrl;
+      img.alt = selected.type || "Photo";
+      img.className = "photos-preview-img";
+      previewPanel.appendChild(img);
+    }
+
+    const annTitle = document.createElement("h3");
+    annTitle.textContent = "Annotate & save";
+    annotationPanel.appendChild(annTitle);
+
+    if (!selected) {
+      const msg = document.createElement("p");
+      msg.textContent = "Capture a photo to set its type, GPS and notes before saving.";
+      annotationPanel.appendChild(msg);
+    } else {
+      const isPending =
+        AppState.pendingPhoto && selected.id === AppState.pendingPhoto.id;
+
+      const typeField = document.createElement("div");
+      typeField.className = "field";
+      const typeLabel = document.createElement("label");
+      typeLabel.textContent = "Photo type";
+      typeLabel.htmlFor = "photo-type-select";
+      const typeSelect = document.createElement("select");
+      typeSelect.id = "photo-type-select";
+      [
+        "",
+        "Boiler",
+        "Flue",
+        "Window",
+        "Gas meter",
+        "Drain",
+        "Cylinder",
+        "Controls",
+        "Other"
+      ].forEach((opt) => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt || "Select…";
+        if ((selected.type || "") === opt) {
+          o.selected = true;
+        }
+        typeSelect.appendChild(o);
+      });
+      typeField.appendChild(typeLabel);
+      typeField.appendChild(typeSelect);
+      annotationPanel.appendChild(typeField);
+
+      const notesField = document.createElement("div");
+      notesField.className = "field";
+      const notesLabel = document.createElement("label");
+      notesLabel.textContent = "Notes";
+      notesLabel.htmlFor = "photo-notes-input";
+      const notesInput = document.createElement("textarea");
+      notesInput.id = "photo-notes-input";
+      notesInput.rows = 3;
+      notesInput.value = selected.notes || "";
+      notesField.appendChild(notesLabel);
+      notesField.appendChild(notesInput);
+      annotationPanel.appendChild(notesField);
+
+      const gpsInfo = document.createElement("p");
+      gpsInfo.className = "gps-info";
+      if (selected.lat != null && selected.lng != null) {
+        gpsInfo.textContent = `GPS: ${selected.lat.toFixed(
+          5
+        )}, ${selected.lng.toFixed(5)}`;
+      } else if (isPending) {
+        gpsInfo.textContent =
+          "Getting GPS position… (you can still save without GPS if needed)";
+      } else {
+        gpsInfo.textContent = "GPS not available for this photo.";
+      }
+      annotationPanel.appendChild(gpsInfo);
+
+      const btnRow = document.createElement("div");
+      btnRow.className = "button-row";
+
+      if (isPending) {
+        const saveBtn = document.createElement("button");
+        saveBtn.textContent = "Save photo";
+        saveBtn.className = "primary";
+        saveBtn.addEventListener("click", () => {
+          const typeValue = typeSelect.value;
+          if (!typeValue) {
+            alert("Please set a photo type before saving.");
+            return;
+          }
+          savePendingPhoto(typeValue, notesInput.value);
+        });
+        btnRow.appendChild(saveBtn);
+      } else {
+        // Future: could add delete / retake here.
+        const infoBtn = document.createElement("button");
+        infoBtn.textContent = "Photo saved";
+        infoBtn.disabled = true;
+        btnRow.appendChild(infoBtn);
+      }
+
+      annotationPanel.appendChild(btnRow);
+    }
+
+    midRow.appendChild(previewPanel);
+    midRow.appendChild(annotationPanel);
+    wrapper.appendChild(midRow);
+
+    // --- Bottom: GPS & crow-flies distance table ---
+
+    const bottom = document.createElement("div");
+    bottom.className = "step-panel photos-table-panel";
+
+    const boilerPhoto = getBoilerPhoto();
+
+    const tableTitle = document.createElement("h3");
+    tableTitle.textContent = "Photos & distances (crow-flies)";
+    bottom.appendChild(tableTitle);
+
+    const table = document.createElement("table");
+    table.className = "photos-table";
+
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+      <tr>
+        <th>#</th>
+        <th>Type</th>
+        <th>Lat</th>
+        <th>Lng</th>
+        <th>Distance from boiler (m)</th>
+      </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    AppState.photos.forEach((p, idx) => {
+      const tr = document.createElement("tr");
+      const tdIdx = document.createElement("td");
+      tdIdx.textContent = String(idx + 1);
+      const tdType = document.createElement("td");
+      tdType.textContent = p.type || "Untyped";
+
+      const tdLat = document.createElement("td");
+      tdLat.textContent =
+        p.lat != null ? p.lat.toFixed(5) : "-";
+
+      const tdLng = document.createElement("td");
+      tdLng.textContent =
+        p.lng != null ? p.lng.toFixed(5) : "-";
+
+      const tdDist = document.createElement("td");
+      if (boilerPhoto && p.id === boilerPhoto.id) {
+        // This is the boiler photo itself
+        tdDist.textContent = "-";
+      } else if (
+        boilerPhoto &&
+        p.lat != null &&
+        p.lng != null &&
+        boilerPhoto.lat != null &&
+        boilerPhoto.lng != null
+      ) {
+        const d = haversineDistanceMeters(
+          boilerPhoto.lat,
+          boilerPhoto.lng,
+          p.lat,
+          p.lng
+        );
+        tdDist.textContent = d.toFixed(1);
+      } else if (!boilerPhoto) {
+        tdDist.textContent = "Set a boiler photo first";
+      } else {
+        tdDist.textContent = "-";
+      }
+
+      tr.appendChild(tdIdx);
+      tr.appendChild(tdType);
+      tr.appendChild(tdLat);
+      tr.appendChild(tdLng);
+      tr.appendChild(tdDist);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    bottom.appendChild(table);
+
+    wrapper.appendChild(bottom);
+
+    container.appendChild(wrapper);
   }
 
   function renderPlaceholderStep(container, stepNumber) {
@@ -826,13 +1227,18 @@
   }
 
   function buildAIContext() {
-    // Minimal context; extend this with whatever JSON you want.
     return {
       currentView: AppState.currentView,
       surveyStep: AppState.surveyStep,
       currentSessionId: AppState.currentSessionId,
-      transcript: AppState.transcript
-      // TODO: include structured survey JSON once sections are added
+      transcript: AppState.transcript,
+      currentAppointmentId: AppState.currentAppointmentId,
+      photosSummary: AppState.photos.map((p) => ({
+        id: p.id,
+        type: p.type,
+        lat: p.lat,
+        lng: p.lng
+      }))
     };
   }
 
@@ -880,8 +1286,7 @@
         AppState.aiMessages[thinkingIndex] = {
           role: "assistant",
           text:
-            "Sorry, I couldn't reach the agent at the moment. " +
-            "Check the voice-notes-2 worker and its /agent endpoint."
+            "Sorry, I couldn't reach the agent. Check the voice-notes-2 worker /agent endpoint."
         };
         renderAIMessages();
       });
