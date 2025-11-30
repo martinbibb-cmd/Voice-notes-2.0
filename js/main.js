@@ -7,6 +7,7 @@ import PhotoMarkup from './photos/canvas-markup.js';
 import RecommendationsEngine from './recommendations/engine.js';
 import DocumentGenerator from './documents/customer-pdf.js';
 import JobExporter from './storage/job-folders.js';
+import * as workerClient from './workerClient.js';
 
 class VoiceNotes2App {
   constructor() {
@@ -34,7 +35,7 @@ class VoiceNotes2App {
       { name: 'Future plans', order: 14 }
     ];
 
-    this.workerUrl = 'https://depot-voice-notes.martinbibb.workers.dev';
+    // Worker URL is now managed by workerClient module
     this.processingTranscript = false;
     this.transcriptDebounceTimer = null;
     this.lastProcessedTranscript = '';
@@ -494,7 +495,6 @@ class VoiceNotes2App {
 
     // Show processing indicator
     const sectionsList = document.getElementById('sections-list');
-    const originalContent = sectionsList.innerHTML;
     if (Object.keys(this.state.currentJob.sections).length === 0) {
       sectionsList.innerHTML = '<p style="color: var(--primary); text-align: center;">🤖 AI is processing your notes...</p>';
     }
@@ -506,25 +506,12 @@ class VoiceNotes2App {
         plainText: s.content
       }));
 
-      // Call Cloudflare Worker
-      const response = await fetch(`${this.workerUrl}/text`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          transcript: transcript,
-          expectedSections: this.sectionSchema.map(s => s.name),
-          alreadyCaptured: alreadyCaptured,
-          depotSections: this.sectionSchema
-        })
+      // Use workerClient to analyze text
+      const data = await workerClient.analyseText(transcript, {
+        expectedSections: this.sectionSchema.map(s => s.name),
+        alreadyCaptured: alreadyCaptured,
+        depotSections: this.sectionSchema
       });
-
-      if (!response.ok) {
-        throw new Error(`Worker responded with ${response.status}`);
-      }
-
-      const data = await response.json();
 
       // Update sections from AI response
       if (data.sections && Array.isArray(data.sections)) {
@@ -876,4 +863,6 @@ class VoiceNotes2App {
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new VoiceNotes2App();
+  // Expose workerClient globally for easy access from settings and debugging
+  window.workerClient = workerClient;
 });

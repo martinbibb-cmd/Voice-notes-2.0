@@ -241,6 +241,60 @@
   </header>
 
   <main>
+    <!-- AI Provider Settings -->
+    <section class="card" style="grid-column: 1 / -1;">
+      <div class="card-header">
+        <h2>AI Provider Settings</h2>
+        <span>Configure worker URL and AI providers for text analysis</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px;">
+            Worker URL
+          </label>
+          <input type="text" id="workerUrl" 
+            placeholder="https://depot-voice-notes.martinbibb.workers.dev"
+            style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.8rem;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px;">
+            Preferred AI Provider
+          </label>
+          <select id="preferredProvider" 
+            style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.8rem;">
+            <option value="openai">OpenAI (GPT-4)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="together">Together AI (Llama)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label style="display: block; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px;">
+          Request Timeout (seconds)
+        </label>
+        <input type="number" id="requestTimeout" min="5" max="120" value="30"
+          style="width: 120px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.8rem;">
+      </div>
+
+      <div class="toolbar" style="margin-top: 12px;">
+        <button id="saveApiSettingsBtn">Save API Settings</button>
+        <button id="testConnectionBtn" class="secondary">Test Connection</button>
+        <span id="connectionStatus" style="font-size: 0.7rem; color: var(--muted); margin-left: 8px;"></span>
+      </div>
+
+      <p class="hint">
+        The worker provides secure access to AI APIs. Configure the worker URL to point to your Cloudflare Worker deployment.
+        API keys are stored securely in the worker's environment variables.
+      </p>
+
+      <div id="providerStatus" style="display: none; margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 0.75rem;">
+        <strong>Provider Status:</strong>
+        <div id="providerStatusDetails" style="margin-top: 8px;"></div>
+      </div>
+    </section>
+
     <!-- Export Format Preferences -->
     <section class="card" style="grid-column: 1 / -1;">
       <div class="card-header">
@@ -895,11 +949,147 @@
       });
     });
 
+    // --- API Settings ---
+    const WORKER_SETTINGS_KEY = 'voiceNotes2.workerSettings';
+
+    function loadApiSettings() {
+      try {
+        const saved = localStorage.getItem(WORKER_SETTINGS_KEY);
+        if (saved) {
+          const settings = JSON.parse(saved);
+          
+          const workerUrlInput = document.getElementById('workerUrl');
+          const providerSelect = document.getElementById('preferredProvider');
+          const timeoutInput = document.getElementById('requestTimeout');
+          
+          if (workerUrlInput && settings.workerUrl) {
+            workerUrlInput.value = settings.workerUrl;
+          }
+          if (providerSelect && settings.preferredProvider) {
+            providerSelect.value = settings.preferredProvider;
+          }
+          if (timeoutInput && settings.requestTimeout) {
+            timeoutInput.value = Math.round(settings.requestTimeout / 1000);
+          }
+        } else {
+          // Set default values
+          const workerUrlInput = document.getElementById('workerUrl');
+          if (workerUrlInput) {
+            workerUrlInput.value = 'https://depot-voice-notes.martinbibb.workers.dev';
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load API settings:', e);
+      }
+    }
+
+    function saveApiSettings() {
+      try {
+        const workerUrl = document.getElementById('workerUrl').value.trim();
+        const preferredProvider = document.getElementById('preferredProvider').value;
+        const requestTimeout = parseInt(document.getElementById('requestTimeout').value) * 1000;
+
+        const settings = {
+          workerUrl: workerUrl || 'https://depot-voice-notes.martinbibb.workers.dev',
+          preferredProvider: preferredProvider || 'openai',
+          requestTimeout: requestTimeout || 30000
+        };
+
+        localStorage.setItem(WORKER_SETTINGS_KEY, JSON.stringify(settings));
+        return true;
+      } catch (e) {
+        console.error('Failed to save API settings:', e);
+        return false;
+      }
+    }
+
+    async function testWorkerConnection() {
+      const connectionStatus = document.getElementById('connectionStatus');
+      const providerStatus = document.getElementById('providerStatus');
+      const providerStatusDetails = document.getElementById('providerStatusDetails');
+
+      connectionStatus.textContent = 'Testing connection...';
+      connectionStatus.style.color = 'var(--accent)';
+
+      const workerUrl = document.getElementById('workerUrl').value.trim() || 'https://depot-voice-notes.martinbibb.workers.dev';
+
+      try {
+        const response = await fetch(`${workerUrl}/health`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'ok') {
+          connectionStatus.textContent = '✅ Connected successfully!';
+          connectionStatus.style.color = '#10b981';
+
+          // Show provider status
+          providerStatus.style.display = 'block';
+          
+          const providers = data.providers || {};
+          let statusHtml = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">';
+          
+          statusHtml += `<div style="padding: 8px; border-radius: 6px; background: ${providers.openai ? '#d1fae5' : '#fee2e2'};">
+            <strong>OpenAI:</strong> ${providers.openai ? '✅ Ready' : '❌ Not configured'}
+          </div>`;
+          
+          statusHtml += `<div style="padding: 8px; border-radius: 6px; background: ${providers.anthropic ? '#d1fae5' : '#fee2e2'};">
+            <strong>Anthropic:</strong> ${providers.anthropic ? '✅ Ready' : '❌ Not configured'}
+          </div>`;
+          
+          statusHtml += `<div style="padding: 8px; border-radius: 6px; background: ${providers.together ? '#d1fae5' : '#fee2e2'};">
+            <strong>Together:</strong> ${providers.together ? '✅ Ready' : '❌ Not configured'}
+          </div>`;
+          
+          statusHtml += '</div>';
+          
+          if (data.database) {
+            statusHtml += '<div style="margin-top: 8px;">💾 Database storage: ✅ Available</div>';
+          }
+          
+          providerStatusDetails.innerHTML = statusHtml;
+        } else {
+          throw new Error(data.error || 'Unknown error');
+        }
+      } catch (error) {
+        connectionStatus.textContent = `❌ Connection failed: ${error.message}`;
+        connectionStatus.style.color = 'var(--danger)';
+        providerStatus.style.display = 'none';
+      }
+    }
+
+    // Wire up API settings buttons
+    const saveApiSettingsBtn = document.getElementById('saveApiSettingsBtn');
+    const testConnectionBtn = document.getElementById('testConnectionBtn');
+
+    if (saveApiSettingsBtn) {
+      saveApiSettingsBtn.addEventListener('click', () => {
+        if (saveApiSettings()) {
+          alert('API settings saved successfully!');
+        } else {
+          alert('Failed to save API settings.');
+        }
+      });
+    }
+
+    if (testConnectionBtn) {
+      testConnectionBtn.addEventListener('click', () => {
+        testWorkerConnection();
+      });
+    }
+
     // --- Boot ---
     (function boot() {
       loadSections();
       loadChecklist();
       loadExportFormat();
+      loadApiSettings();
     })();
   </script>
 </body>
