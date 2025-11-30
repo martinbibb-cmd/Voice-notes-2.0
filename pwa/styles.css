@@ -543,3 +543,126 @@ textarea {
   }
 }
 
+/* Step 2 – Photos */
+
+.photos-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.photos-top {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.photos-controls {
+  min-width: 180px;
+}
+
+.photos-hint {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.4rem;
+}
+
+.photos-thumbnails {
+  flex: 1;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+}
+
+.photo-thumb {
+  min-width: 80px;
+  max-width: 100px;
+  border-radius: 6px;
+  border: 1px solid #cbd2da;
+  background: #ffffff;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.photo-thumb.pending {
+  border-style: dashed;
+}
+
+.photo-thumb.active {
+  border-color: #4b8cf7;
+  box-shadow: 0 0 0 2px rgba(75, 140, 247, 0.3);
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.thumb-label {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.photos-middle {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.2fr) minmax(220px, 1fr);
+  gap: 0.75rem;
+}
+
+.photos-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photos-preview-img {
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 6px;
+  border: 1px solid #cbd2da;
+  object-fit: contain;
+}
+
+.photos-annotate {
+  display: flex;
+  flex-direction: column;
+}
+
+.gps-info {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 0.4rem;
+}
+
+.photos-table-panel {
+  margin-top: 0.25rem;
+}
+
+.photos-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.photos-table th,
+.photos-table td {
+  border: 1px solid #dde0e3;
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+}
+
+.photos-table th {
+  background: #f3f4f6;
+}
+
+@media (max-width: 900px) {
+  .photos-middle {
+    grid-template-columns: 1fr;
+  }
+}
+
