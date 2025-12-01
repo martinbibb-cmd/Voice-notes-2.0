@@ -1928,9 +1928,19 @@
                 <span>Flue</span>
                 <span class="nav-check">✓</span>
               </button>
+              <button type="button" class="survey-section-nav-btn" data-section="flue-builder-section">
+                <span class="nav-icon">📐</span>
+                <span>Flue Route</span>
+                <span class="nav-check">✓</span>
+              </button>
               <button type="button" class="survey-section-nav-btn" data-section="gas-section">
                 <span class="nav-icon">🔧</span>
                 <span>Gas</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="condensate-section">
+                <span class="nav-icon">💧</span>
+                <span>Condensate</span>
                 <span class="nav-check">✓</span>
               </button>
               <button type="button" class="survey-section-nav-btn" data-section="controls-section">
@@ -1979,6 +1989,54 @@
 
               <!-- Hidden field so the app knows what was chosen -->
               <input type="hidden" id="new-system-type" />
+              
+              <!-- BRAND SELECTION (Step 2) -->
+              <div id="boiler-brand-section" class="boiler-selection-step" style="display: none; margin-top: 24px;">
+                <h4>Select Boiler Brand</h4>
+                <p class="hint">Choose the manufacturer for your new boiler.</p>
+                <div class="brand-options-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                  <div class="brand-option-card" data-brand="worcester" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <img src="Assets/Worcester-logo.PNG" alt="Worcester Bosch" style="max-width: 100%; max-height: 60px; object-fit: contain; margin-bottom: 10px;" />
+                    <div style="font-weight: 600; color: #1e293b;">Worcester Bosch</div>
+                  </div>
+                  <div class="brand-option-card" data-brand="vaillant" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <img src="Assets/Vaillant-logo.PNG" alt="Vaillant" style="max-width: 100%; max-height: 60px; object-fit: contain; margin-bottom: 10px;" />
+                    <div style="font-weight: 600; color: #1e293b;">Vaillant</div>
+                  </div>
+                  <div class="brand-option-card" data-brand="viessmann" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <img src="Assets/Viessmann-logo.JPG" alt="Viessmann" style="max-width: 100%; max-height: 60px; object-fit: contain; margin-bottom: 10px;" />
+                    <div style="font-weight: 600; color: #1e293b;">Viessmann</div>
+                  </div>
+                  <div class="brand-option-card" data-brand="glow-worm" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <img src="Assets/Glow-worm-logo.JPG" alt="Glow-worm" style="max-width: 100%; max-height: 60px; object-fit: contain; margin-bottom: 10px;" />
+                    <div style="font-weight: 600; color: #1e293b;">Glow-worm</div>
+                  </div>
+                  <div class="brand-option-card" data-brand="ideal" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔥</div>
+                    <div style="font-weight: 600; color: #1e293b;">Ideal</div>
+                  </div>
+                  <div class="brand-option-card" data-brand="baxi" style="border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px; text-align: center; cursor: pointer; background: white; transition: all 0.2s;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🔥</div>
+                    <div style="font-weight: 600; color: #1e293b;">Baxi</div>
+                  </div>
+                </div>
+                <input type="hidden" id="new-boiler-brand" />
+              </div>
+              
+              <!-- MODEL SELECTION (Step 3) -->
+              <div id="boiler-model-section" class="boiler-selection-step" style="display: none; margin-top: 24px;">
+                <h4>Select Boiler Model</h4>
+                <p class="hint">Choose the specific model for the selected brand.</p>
+                <select id="new-boiler-model" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; background: white;">
+                  <option value="">Select a model...</option>
+                </select>
+                
+                <!-- Selected Boiler Summary -->
+                <div id="boiler-selection-summary" style="display: none; margin-top: 16px; padding: 16px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.02)); border-radius: 12px; border: 2px solid #10b981;">
+                  <h5 style="margin: 0 0 8px 0; color: #059669;">✓ Selected Boiler</h5>
+                  <div id="boiler-summary-text" style="font-weight: 600; color: #0f172a;"></div>
+                </div>
+              </div>
             </div>
 
             <!-- CYLINDER SECTION: only relevant for SYSTEM or REGULAR -->
@@ -2052,6 +2110,78 @@
                         placeholder="Route, bends, plume kit, guards, clearance concerns…"></textarea>
             </div>
 
+            <!-- FLUE ROUTE BUILDER SECTION -->
+            <div id="flue-builder-section" class="survey-subsection">
+              <h4>📐 Flue Route Builder</h4>
+              <p class="hint">
+                Build up the flue route by adding segments. Equivalent length is calculated automatically.
+              </p>
+              
+              <!-- Flue Builder Controls -->
+              <div class="flue-builder-panel" style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px;">
+                  <button type="button" class="btn btn-secondary flue-segment-btn" data-segment="straight-1m">
+                    ➕ Straight 1m
+                  </button>
+                  <button type="button" class="btn btn-secondary flue-segment-btn" data-segment="straight-0.5m">
+                    ➕ Straight 0.5m
+                  </button>
+                  <button type="button" class="btn btn-secondary flue-segment-btn" data-segment="bend-45">
+                    🔄 45° Bend
+                  </button>
+                  <button type="button" class="btn btn-secondary flue-segment-btn" data-segment="bend-90">
+                    🔄 90° Bend
+                  </button>
+                  <button type="button" class="btn btn-secondary flue-segment-btn" data-segment="plume-kit">
+                    💨 Plume Kit
+                  </button>
+                </div>
+                
+                <!-- Direction Pad (optional) -->
+                <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                  <div style="display: grid; grid-template-columns: repeat(3, 40px); grid-template-rows: repeat(3, 40px); gap: 4px;">
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="nw" style="padding: 8px; font-size: 1rem;">↖️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="n" style="padding: 8px; font-size: 1rem;">⬆️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="ne" style="padding: 8px; font-size: 1rem;">↗️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="w" style="padding: 8px; font-size: 1rem;">⬅️</button>
+                    <button type="button" class="btn btn-secondary" style="padding: 8px; font-size: 0.7rem; cursor: default;">DIR</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="e" style="padding: 8px; font-size: 1rem;">➡️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="sw" style="padding: 8px; font-size: 1rem;">↙️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="s" style="padding: 8px; font-size: 1rem;">⬇️</button>
+                    <button type="button" class="btn btn-secondary flue-direction-btn" data-direction="se" style="padding: 8px; font-size: 1rem;">↘️</button>
+                  </div>
+                </div>
+                
+                <!-- Flue Summary Display -->
+                <div id="flue-summary-display" style="background: white; border-radius: 8px; padding: 16px; border: 2px solid #e2e8f0;">
+                  <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                      <strong style="color: var(--muted); font-size: 0.85rem;">Equivalent Length:</strong>
+                      <span id="flue-eq-length" style="font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-left: 8px;">0.0m</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--muted); font-size: 0.85rem;">Bends:</strong>
+                      <span id="flue-bend-count" style="font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-left: 8px;">0</span>
+                    </div>
+                    <div>
+                      <span id="flue-status-badge" style="padding: 6px 14px; border-radius: 999px; font-size: 0.85rem; font-weight: 600; background: #d1fae5; color: #059669;">OK</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Segment List -->
+                <div id="flue-segments-list" style="margin-top: 12px; font-size: 0.9rem; color: var(--muted);">
+                  <em>No segments added yet.</em>
+                </div>
+                
+                <!-- Actions -->
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                  <button type="button" class="btn btn-secondary" id="flue-undo-btn" style="padding: 8px 16px;">↶ Undo</button>
+                  <button type="button" class="btn btn-danger" id="flue-clear-btn" style="padding: 8px 16px;">🗑️ Clear</button>
+                </div>
+              </div>
+            </div>
+
             <!-- GAS SECTION -->
             <div id="gas-section" class="survey-subsection">
               <h4>Gas supply &amp; upgrades</h4>
@@ -2076,6 +2206,79 @@
                   <input type="checkbox" value="meter-upgrade" />
                   <span class="chip-label">⬆️ Meter upgrade (U6/U16)</span>
                 </label>
+              </div>
+            </div>
+
+            <!-- CONDENSATE SECTION -->
+            <div id="condensate-section" class="survey-subsection">
+              <h4>💧 Condensate (new)</h4>
+              <p class="hint">
+                Select the condensate discharge route. Multiple options can be selected if applicable.
+              </p>
+              
+              <!-- External Discharge Options -->
+              <h5 class="bold-label">External Discharge</h5>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-external" value="hopper-head" />
+                  <span class="chip-label">🏠 Hopper Head</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-external" value="soil-hopper" />
+                  <span class="chip-label">🏠 Soil / Hopper</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-external" value="gully" />
+                  <span class="chip-label">🕳️ Gully</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-external" value="soakaway" />
+                  <span class="chip-label">🌿 Soakaway</span>
+                </label>
+              </div>
+              
+              <!-- Internal Discharge Options -->
+              <h5 class="bold-label">Internal Discharge</h5>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-internal" value="sink-trap" />
+                  <span class="chip-label">🚰 Sink Trap</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-internal" value="internal-stack" />
+                  <span class="chip-label">📦 Internal Stack</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-internal" value="direct-out" />
+                  <span class="chip-label">➡️ Direct Out</span>
+                </label>
+              </div>
+              
+              <!-- Additional Requirements -->
+              <h5 class="bold-label">Additional Requirements</h5>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-extra" value="pump" />
+                  <span class="chip-label">⚡ Condensate Pump</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-extra" value="trace-heating" />
+                  <span class="chip-label">🔥 Trace Heating</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-extra" value="42mm-insulated" />
+                  <span class="chip-label">🛠️ 42mm Insulated</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" name="condensate-extra" value="neutraliser" />
+                  <span class="chip-label">⚗️ Neutraliser</span>
+                </label>
+              </div>
+              
+              <div style="margin-top: 12px;">
+                <button type="button" class="btn btn-secondary" id="condensate-clear-btn" style="padding: 8px 16px;">
+                  🗑️ Clear Condensate
+                </button>
               </div>
             </div>
 
@@ -2158,14 +2361,15 @@
               <button class="btn btn-secondary" data-tool="arrow">→ Arrow</button>
             </div>
 
-            <div style="display: flex; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
+            <!-- Zoom/Pan controls hidden for canvas stability -->
+            <div style="display: none; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
               <strong style="font-size: 0.85rem; color: var(--muted);">Zoom:</strong>
               <button class="btn btn-secondary" id="zoom-out">−</button>
               <button class="btn btn-secondary" id="zoom-reset">1:1</button>
               <button class="btn btn-secondary" id="zoom-in">+</button>
             </div>
 
-            <div style="display: flex; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
+            <div style="display: none; gap: 8px; align-items: center; border-right: 2px solid var(--border); padding-right: 8px;">
               <strong style="font-size: 0.85rem; color: var(--muted);">Pan:</strong>
               <button class="btn btn-secondary" id="pan-up">↑</button>
               <button class="btn btn-secondary" id="pan-down">↓</button>

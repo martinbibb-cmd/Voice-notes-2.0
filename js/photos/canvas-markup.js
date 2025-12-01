@@ -1,25 +1,18 @@
 // Photo Markup Module
 // Canvas-based photo annotation and markup tools
-// Based on Clearances-Genie implementation
+// Stabilised version: Fixed 1:1 scale, no zoom/pan transforms
+// All annotations stored and drawn in CANVAS coordinates for consistency
 
-const PhotoViewport = {
+const PhotoState = {
   img: null,          // HTMLImageElement
   imgWidth: 0,        // naturalWidth
   imgHeight: 0,       // naturalHeight
-  baseScale: 1,       // fit-to-canvas scale
-  zoomFactor: 1,      // 1 = 100%, 2 = 200%, etc.
-  offsetX: 0,         // canvas-space offset where image origin (0,0) is drawn
-  offsetY: 0,
-  annotations: [],    // each annotation in IMAGE space, not canvas space
-  lat: null,
-  lng: null,
-  panX: 0,
-  panY: 0
+  scale: 1,           // Fixed scale (no zoom for stability)
+  annotations: []     // Annotations stored in CANVAS coordinates
 };
 
-function getCurrentScale() {
-  return PhotoViewport.baseScale * PhotoViewport.zoomFactor;
-}
+// Maximum canvas width to prevent huge canvases
+const MAX_CANVAS_WIDTH = 900;
 
 export default class PhotoMarkup {
   constructor() {
@@ -29,7 +22,6 @@ export default class PhotoMarkup {
     this.isDrawing = false;
     this.startPos = null;
     this.originalImage = null;
-    this.imageData = null;
 
     this.currentElement = null;
 
@@ -44,10 +36,6 @@ export default class PhotoMarkup {
 
     this.currentColor = this.colors.red;
     this.lineWidth = 3;
-
-    // Zoom properties
-    this.minScale = 0.5;
-    this.maxScale = 4;
 
     this.setupCanvas();
   }
@@ -75,10 +63,8 @@ export default class PhotoMarkup {
 
     img.onload = () => {
       this.originalImage = img;
-      initPhotoViewportWithImage(img, this.canvas);
-      this.imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-
-      console.log('Image loaded:', img.width, 'x', img.height);
+      loadPhotoIntoCanvas(img, this.canvas);
+      console.log('Image loaded:', img.naturalWidth, 'x', img.naturalHeight, '-> canvas:', this.canvas.width, 'x', this.canvas.height);
     };
   }
 
@@ -92,23 +78,23 @@ export default class PhotoMarkup {
   }
 
   handleMouseDown(e) {
+    // Use direct canvas coordinates (no transform conversion)
     const { x, y } = this.getCanvasCoordinates(e);
-    const imgPoint = canvasToImageCoords(x, y);
 
     this.isDrawing = true;
-    this.startPos = imgPoint;
+    this.startPos = { x, y };
 
     if (this.currentTool === 'point') {
-      this.addPoint(imgPoint.x, imgPoint.y);
+      this.addPoint(x, y);
       this.isDrawing = false;
     } else if (this.currentTool === 'text') {
-      this.addText(imgPoint.x, imgPoint.y);
+      this.addText(x, y);
       this.isDrawing = false;
     } else {
       this.currentElement = {
         type: this.currentTool,
-        x: imgPoint.x,
-        y: imgPoint.y,
+        x: x,
+        y: y,
         w: 0,
         h: 0,
         color: this.currentColor,
@@ -120,37 +106,53 @@ export default class PhotoMarkup {
   handleMouseMove(e) {
     if (!this.isDrawing || !this.startPos || !this.currentElement) return;
 
+    // Use direct canvas coordinates
     const { x, y } = this.getCanvasCoordinates(e);
-    const imgPoint = canvasToImageCoords(x, y);
 
     if (this.currentTool === 'rectangle') {
-      this.currentElement.w = imgPoint.x - this.startPos.x;
-      this.currentElement.h = imgPoint.y - this.startPos.y;
+      this.currentElement.w = x - this.startPos.x;
+      this.currentElement.h = y - this.startPos.y;
     } else if (this.currentTool === 'circle') {
-      const dx = imgPoint.x - this.startPos.x;
-      const dy = imgPoint.y - this.startPos.y;
+      const dx = x - this.startPos.x;
+      const dy = y - this.startPos.y;
       this.currentElement.r = Math.sqrt(dx * dx + dy * dy);
     } else if (this.currentTool === 'arrow') {
-      this.currentElement.x2 = imgPoint.x;
-      this.currentElement.y2 = imgPoint.y;
+      this.currentElement.x2 = x;
+      this.currentElement.y2 = y;
     }
 
+    // Redraw everything including preview
     drawPhotoAndAnnotations(this.canvas);
     if (this.currentElement) {
-      const scale = getCurrentScale();
-      drawAnnotation(this.ctx, this.currentElement, scale, PhotoViewport.offsetX, PhotoViewport.offsetY, this.currentColor, this.lineWidth);
+      drawAnnotation(this.ctx, this.currentElement);
     }
   }
 
   handleMouseUp() {
     if (!this.isDrawing || !this.startPos || !this.currentElement) return;
 
-    if (this.currentTool === 'rectangle' && (this.currentElement.w === 0 || this.currentElement.h === 0)) {
+    // Only save if the shape has meaningful size
+    if (this.currentTool === 'rectangle' && (Math.abs(this.currentElement.w) < 3 || Math.abs(this.currentElement.h) < 3)) {
       this.resetDrawingState();
+      drawPhotoAndAnnotations(this.canvas);
       return;
     }
+    if (this.currentTool === 'circle' && (!this.currentElement.r || this.currentElement.r < 3)) {
+      this.resetDrawingState();
+      drawPhotoAndAnnotations(this.canvas);
+      return;
+    }
+    if (this.currentTool === 'arrow') {
+      const dx = (this.currentElement.x2 || this.currentElement.x) - this.currentElement.x;
+      const dy = (this.currentElement.y2 || this.currentElement.y) - this.currentElement.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 5) {
+        this.resetDrawingState();
+        drawPhotoAndAnnotations(this.canvas);
+        return;
+      }
+    }
 
-    PhotoViewport.annotations.push({ ...this.currentElement });
+    PhotoState.annotations.push({ ...this.currentElement });
     this.resetDrawingState();
     drawPhotoAndAnnotations(this.canvas);
   }
@@ -189,7 +191,7 @@ export default class PhotoMarkup {
       color: this.currentColor
     };
 
-    PhotoViewport.annotations.push(annotation);
+    PhotoState.annotations.push(annotation);
     drawPhotoAndAnnotations(this.canvas);
   }
 
@@ -206,7 +208,7 @@ export default class PhotoMarkup {
       font: '16px sans-serif'
     };
 
-    PhotoViewport.annotations.push(annotation);
+    PhotoState.annotations.push(annotation);
     drawPhotoAndAnnotations(this.canvas);
   }
 
@@ -215,7 +217,7 @@ export default class PhotoMarkup {
   }
 
   clear() {
-    PhotoViewport.annotations = [];
+    PhotoState.annotations = [];
     this.redrawCanvas();
   }
 
@@ -226,67 +228,67 @@ export default class PhotoMarkup {
 
   getOriginalDataUrl() {
     // Export the original image (without markup) as a data URL
-    if (!PhotoViewport.img) {
+    if (!PhotoState.img) {
       return null;
     }
 
     // Create a temporary canvas to get the original image data URL
     const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = PhotoViewport.imgWidth;
-    tempCanvas.height = PhotoViewport.imgHeight;
+    tempCanvas.width = PhotoState.imgWidth;
+    tempCanvas.height = PhotoState.imgHeight;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(PhotoViewport.img, 0, 0);
+    tempCtx.drawImage(PhotoState.img, 0, 0);
 
     return tempCanvas.toDataURL('image/jpeg', 0.95);
   }
 
   undo() {
-    if (PhotoViewport.annotations.length === 0) return;
-    PhotoViewport.annotations.pop();
+    if (PhotoState.annotations.length === 0) return;
+    PhotoState.annotations.pop();
     this.redrawCanvas();
   }
 
-  // Zoom controls
+  // Zoom controls - DISABLED for stability
+  // These are no-ops to prevent transforms from breaking annotation coordinates
   zoomIn() {
-    this.setZoomFactor(PhotoViewport.zoomFactor * 1.25);
+    console.log('Zoom disabled for canvas stability');
+    // No-op: zoom disabled to stabilize canvas
   }
 
   zoomOut() {
-    this.setZoomFactor(PhotoViewport.zoomFactor * 0.8);
+    console.log('Zoom disabled for canvas stability');
+    // No-op: zoom disabled to stabilize canvas
   }
 
   zoomReset() {
-    this.setZoomFactor(1);
+    console.log('Zoom disabled for canvas stability');
+    // No-op: just redraw at current fixed scale
+    drawPhotoAndAnnotations(this.canvas);
   }
 
-  // Pan controls (optional)
+  // Pan controls - DISABLED for stability
   panUp() {
-    PhotoViewport.panY -= 20;
-    drawPhotoAndAnnotations(this.canvas);
+    console.log('Pan disabled for canvas stability');
+    // No-op: pan disabled to stabilize canvas
   }
 
   panDown() {
-    PhotoViewport.panY += 20;
-    drawPhotoAndAnnotations(this.canvas);
+    console.log('Pan disabled for canvas stability');
+    // No-op: pan disabled to stabilize canvas
   }
 
   panLeft() {
-    PhotoViewport.panX -= 20;
-    drawPhotoAndAnnotations(this.canvas);
+    console.log('Pan disabled for canvas stability');
+    // No-op: pan disabled to stabilize canvas
   }
 
   panRight() {
-    PhotoViewport.panX += 20;
-    drawPhotoAndAnnotations(this.canvas);
-  }
-
-  setZoomFactor(factor) {
-    PhotoViewport.zoomFactor = Math.max(this.minScale, Math.min(this.maxScale, factor));
-    drawPhotoAndAnnotations(this.canvas);
+    console.log('Pan disabled for canvas stability');
+    // No-op: pan disabled to stabilize canvas
   }
 
   getAnnotations() {
-    return PhotoViewport.annotations.map(ann => ({ ...ann }));
+    return PhotoState.annotations.map(ann => ({ ...ann }));
   }
 
   getCanvasCoordinates(e) {
@@ -309,85 +311,88 @@ export default class PhotoMarkup {
   }
 }
 
-function initPhotoViewportWithImage(img, canvas) {
-  PhotoViewport.img = img;
-  PhotoViewport.imgWidth = img.naturalWidth;
-  PhotoViewport.imgHeight = img.naturalHeight;
-  PhotoViewport.panX = 0;
-  PhotoViewport.panY = 0;
+/**
+ * Load photo into canvas with a simple, fixed scale
+ * No fancy transforms - just fit the image to canvas size
+ */
+function loadPhotoIntoCanvas(img, canvas) {
+  PhotoState.img = img;
+  PhotoState.imgWidth = img.naturalWidth;
+  PhotoState.imgHeight = img.naturalHeight;
 
-  canvas.width = canvas.clientWidth || 800;
-  canvas.height = canvas.clientHeight || 450;
+  // Calculate scale to fit image within max width, preserving aspect ratio
+  const scale = Math.min(1, MAX_CANVAS_WIDTH / PhotoState.imgWidth);
+  PhotoState.scale = scale;
 
-  const canvasW = canvas.width;
-  const canvasH = canvas.height;
+  // Set canvas size to match scaled image exactly
+  canvas.width = PhotoState.imgWidth * scale;
+  canvas.height = PhotoState.imgHeight * scale;
 
-  const scaleX = canvasW / PhotoViewport.imgWidth;
-  const scaleY = canvasH / PhotoViewport.imgHeight;
-
-  PhotoViewport.baseScale = Math.min(scaleX, scaleY);
-  PhotoViewport.zoomFactor = 1;
-
-  const scaledW = PhotoViewport.imgWidth * PhotoViewport.baseScale;
-  const scaledH = PhotoViewport.imgHeight * PhotoViewport.baseScale;
-
-  PhotoViewport.offsetX = (canvasW - scaledW) / 2;
-  PhotoViewport.offsetY = (canvasH - scaledH) / 2;
-
-  PhotoViewport.annotations = [];
+  // Clear annotations for new image
+  PhotoState.annotations = [];
 
   drawPhotoAndAnnotations(canvas);
 }
 
+/**
+ * Draw the photo and all annotations
+ * Uses simple 1:1 transform - no zoom/pan offsets
+ */
 function drawPhotoAndAnnotations(canvas) {
-  if (!PhotoViewport.img) return;
+  if (!PhotoState.img) return;
   const ctx = canvas.getContext('2d');
+
+  // Reset any previous transforms so nothing "drifts"
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const scale = getCurrentScale();
-  const imgW = PhotoViewport.imgWidth * scale;
-  const imgH = PhotoViewport.imgHeight * scale;
+  // Draw image at (0,0) filling the canvas
+  ctx.drawImage(
+    PhotoState.img,
+    0,
+    0,
+    PhotoState.imgWidth * PhotoState.scale,
+    PhotoState.imgHeight * PhotoState.scale
+  );
 
-  const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2;
-
-  const imgX = centerX - imgW / 2 + PhotoViewport.panX;
-  const imgY = centerY - imgH / 2 + PhotoViewport.panY;
-
-  PhotoViewport.offsetX = imgX;
-  PhotoViewport.offsetY = imgY;
-
-  ctx.drawImage(PhotoViewport.img, imgX, imgY, imgW, imgH);
-
-  PhotoViewport.annotations.forEach((ann) => {
-    drawAnnotation(ctx, ann, scale, imgX, imgY);
+  // Re-draw all annotations in pure canvas coordinates
+  PhotoState.annotations.forEach((ann) => {
+    drawAnnotation(ctx, ann);
   });
 }
 
-function drawAnnotation(ctx, ann, scale, imgX, imgY) {
+/**
+ * Draw a single annotation
+ * Coordinates are already in canvas space - no conversion needed
+ */
+function drawAnnotation(ctx, ann) {
   ctx.save();
-  ctx.lineWidth = ann.lineWidth || 2;
-  ctx.strokeStyle = ann.color || '#ff0000';
-  ctx.fillStyle = ann.color || '#ff0000';
+  ctx.lineWidth = ann.lineWidth || 3;
+  ctx.strokeStyle = ann.color || '#ef4444';
+  ctx.fillStyle = ann.color || '#ef4444';
 
-  const x = imgX + ann.x * scale;
-  const y = imgY + ann.y * scale;
+  const x = ann.x;
+  const y = ann.y;
 
   switch (ann.type) {
     case 'point':
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
       ctx.fill();
+      // Add a white outline for visibility
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
       break;
     case 'rectangle':
     case 'rect': {
-      const w = (ann.w || 0) * scale;
-      const h = (ann.h || 0) * scale;
+      const w = ann.w || 0;
+      const h = ann.h || 0;
       ctx.strokeRect(x, y, w, h);
       break;
     }
     case 'circle': {
-      const r = (ann.r || 0) * scale;
+      const r = ann.r || 0;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.stroke();
@@ -395,12 +400,17 @@ function drawAnnotation(ctx, ann, scale, imgX, imgY) {
     }
     case 'text': {
       ctx.font = ann.font || '16px sans-serif';
-      ctx.fillText(ann.text || '', x + 4, y - 4);
+      // Add background for text visibility
+      const textMetrics = ctx.measureText(ann.text || '');
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.fillRect(x, y - 14, textMetrics.width + 8, 20);
+      ctx.fillStyle = ann.color || '#ef4444';
+      ctx.fillText(ann.text || '', x + 4, y);
       break;
     }
     case 'arrow': {
-      const x2 = imgX + (ann.x2 || ann.x) * scale;
-      const y2 = imgY + (ann.y2 || ann.y) * scale;
+      const x2 = ann.x2 || ann.x;
+      const y2 = ann.y2 || ann.y;
       drawArrow(ctx, x, y, x2, y2);
       break;
     }
@@ -409,15 +419,22 @@ function drawAnnotation(ctx, ann, scale, imgX, imgY) {
   ctx.restore();
 }
 
+/**
+ * Draw an arrow from (x1,y1) to (x2,y2)
+ */
 function drawArrow(ctx, x1, y1, x2, y2) {
-  const headLen = 10;
+  const headLen = 12;
   const dx = x2 - x1;
   const dy = y2 - y1;
   const angle = Math.atan2(dy, dx);
+  
+  // Draw the line
   ctx.beginPath();
   ctx.moveTo(x1, y1);
   ctx.lineTo(x2, y2);
   ctx.stroke();
+  
+  // Draw the arrowhead
   ctx.beginPath();
   ctx.moveTo(x2, y2);
   ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6),
@@ -426,14 +443,4 @@ function drawArrow(ctx, x1, y1, x2, y2) {
              y2 - headLen * Math.sin(angle + Math.PI / 6));
   ctx.closePath();
   ctx.fill();
-}
-
-function canvasToImageCoords(canvasX, canvasY) {
-  const scale = getCurrentScale();
-  const imgX = PhotoViewport.offsetX;
-  const imgY = PhotoViewport.offsetY;
-
-  const xInImage = (canvasX - imgX) / scale;
-  const yInImage = (canvasY - imgY) / scale;
-  return { x: xInImage, y: yInImage };
 }
