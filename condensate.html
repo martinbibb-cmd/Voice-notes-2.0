@@ -52,183 +52,52 @@
       color: var(--accent);
       margin: 0;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 26px;
+    h2 {
+      font-size: 20px;
+      color: #1e293b;
+      margin: 18px 0 6px 0;
     }
-    .img-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 10px;
+    .intro {
+      margin: 0 0 14px 0;
+      color: #4b5563;
+    }
+    .hotspot-wrapper {
       position: relative;
-      min-height: 240px;
+      max-width: 900px;
+      margin: 0 auto 1.5rem auto;
     }
-    .img-card h2 {
-      font-size: 14px;
-      margin: 2px 0 8px;
-      color: #374151;
-    }
-    .img-wrap {
-      position: relative;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #f8fafc;
-      min-height: 200px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .img-wrap img {
+    .hotspot-image {
       width: 100%;
       display: block;
-      border-radius: 10px;
-    }
-    .img-placeholder {
-      color: #94a3b8;
-      font-size: 14px;
-      text-align: center;
-      padding: 40px;
-    }
-    .hotspot {
-      position: absolute;
-      border: 2px solid rgba(102,126,234,.5);
-      background: rgba(102,126,234,.04);
-      border-radius: 10px;
-      cursor: pointer;
-      transition: .12s ease-out;
-    }
-    .hotspot:hover,
-    .hotspot.active {
-      border-color: var(--accent);
-      background: rgba(102,126,234,.16);
-    }
-    .hotspot small {
-      position: absolute;
-      bottom: -20px;
-      left: 0;
-      font-size: 10px;
-      background: rgba(255,255,255,.8);
-      padding: 1px 4px;
       border-radius: 4px;
     }
-    .options-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      margin-top: 20px;
-    }
-    .option-tile {
-      background: #fff;
-      border: 2px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 16px;
-      text-align: center;
+    .condensate-hotspot {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      background: rgba(0, 128, 255, 0.7);
       cursor: pointer;
-      transition: all 0.2s;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 4px rgba(0,0,0,0.5);
     }
-    .option-tile:hover {
-      border-color: var(--accent);
-      transform: translateY(-2px);
+    .condensate-hotspot:hover {
+      background: rgba(0, 128, 255, 0.9);
     }
-    .option-tile.active {
-      border-color: var(--accent);
-      background: linear-gradient(to right, rgba(102,126,234,0.05), rgba(118,75,162,0.05));
+    .condensate-hotspot.selected {
+      background: rgba(0, 200, 0, 0.9);
+      box-shadow: 0 0 6px rgba(0, 200, 0, 0.9);
     }
-    .option-tile .icon {
-      font-size: 32px;
-      margin-bottom: 8px;
+    .condensate-helper {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 0.4rem;
     }
-    .option-tile .label {
-      font-weight: 600;
-      font-size: 14px;
-      color: #374151;
-    }
-    .option-tile .sublabel {
-      font-size: 12px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
-    .actions {
-      margin-top: 20px;
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .btn-secondary {
-      background: #fff;
-      border: 1px solid #d1d5db;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .btn-primary {
-      background: var(--accent);
-      border: none;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      font-weight: 600;
-      color: #fff;
-      transition: all 0.2s;
-    }
-    .btn-primary:hover {
-      background: var(--accent-hover);
-    }
-    .selected-panel {
-      margin-top: 20px;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 16px;
-    }
-    .selected-panel h3 {
-      margin: 0 0 12px 0;
-      font-size: 14px;
-      color: var(--accent);
-    }
-    .pill {
-      display: inline-block;
-      background: #eff6ff;
-      color: #1e40af;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      margin: 2px 6px 2px 0;
-      font-weight: 500;
-    }
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: 1px solid #d1d5db;
-      min-height: 60px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 11px;
-      background: #f9fafb;
-      padding: 8px;
-    }
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 24px 0 12px 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-title:first-of-type {
-      margin-top: 0;
+    .condensate-summary {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      font-style: italic;
     }
     @media (max-width: 600px) {
       .wrap { border-radius: 0; }
@@ -243,153 +112,156 @@
       <h1>🔧 Condensate Options</h1>
     </header>
 
-    <h3 class="section-title">💧 External Discharge Options</h3>
-    <div class="options-grid" id="external-options">
-      <div class="option-tile" data-option="Condensate to hopper head (ext)">
-        <div class="icon">🏠</div>
-        <div class="label">Hopper Head</div>
-        <div class="sublabel">External discharge via hopper</div>
-      </div>
-      <div class="option-tile" data-option="Condensate to soil/hopper">
-        <div class="icon">🏠</div>
-        <div class="label">Soil / Hopper</div>
-        <div class="sublabel">Into stack or hopper</div>
-      </div>
-      <div class="option-tile" data-option="Condensate to gully">
-        <div class="icon">🕳️</div>
-        <div class="label">Gully</div>
-        <div class="sublabel">Ground level drain</div>
-      </div>
-      <div class="option-tile" data-option="Condensate soakaway">
-        <div class="icon">🌿</div>
-        <div class="label">Soakaway</div>
-        <div class="sublabel">Ground absorption</div>
-      </div>
-    </div>
+    <p class="intro">Tap the hotspots on the images below to choose your planned condensate discharge routes.</p>
 
-    <h3 class="section-title">🏠 Internal Discharge Options</h3>
-    <div class="options-grid" id="internal-options">
-      <div class="option-tile" data-option="Condensate to sink waste/trap">
-        <div class="icon">🚰</div>
-        <div class="label">Sink Trap</div>
-        <div class="sublabel">Via sink waste pipe</div>
-      </div>
-      <div class="option-tile" data-option="Condensate to internal stack">
-        <div class="icon">📦</div>
-        <div class="label">Internal Stack</div>
-        <div class="sublabel">Internal soil stack</div>
-      </div>
-      <div class="option-tile" data-option="Condensate to outside (internal run)">
-        <div class="icon">➡️</div>
-        <div class="label">Direct Out</div>
-        <div class="sublabel">Internal run to outside</div>
-      </div>
-    </div>
+    <div id="condensate-picker">
 
-    <h3 class="section-title">⚙️ Additional Requirements</h3>
-    <div class="options-grid" id="additional-options">
-      <div class="option-tile" data-option="Condensate pump required">
-        <div class="icon">⚡</div>
-        <div class="label">Condensate Pump</div>
-        <div class="sublabel">For gravity-challenged routes</div>
-      </div>
-      <div class="option-tile" data-option="Trace heating required">
-        <div class="icon">🔥</div>
-        <div class="label">Trace Heating</div>
-        <div class="sublabel">Frost protection for external</div>
-      </div>
-      <div class="option-tile" data-option="42mm insulated pipe">
-        <div class="icon">🛠️</div>
-        <div class="label">42mm Insulated</div>
-        <div class="sublabel">External pipework spec</div>
-      </div>
-      <div class="option-tile" data-option="Neutraliser required">
-        <div class="icon">⚗️</div>
-        <div class="label">Neutraliser</div>
-        <div class="sublabel">pH neutralisation unit</div>
-      </div>
-    </div>
+      <h2>External condensate route</h2>
+      <p class="condensate-helper">
+        Tap where you plan to discharge the condensate outside.
+      </p>
 
-    <div class="actions">
-      <button class="btn-secondary" id="clear-all">🗑️ Clear All</button>
-      <button class="btn-primary" id="copy-json">📋 Copy to Clipboard</button>
-    </div>
+      <div class="hotspot-wrapper">
+        <img
+          src="Assets/Condensate-external.JPG"
+          alt="External condensate options"
+          class="hotspot-image"
+        >
 
-    <div class="selected-panel">
-      <h3>Selected Options</h3>
-      <div id="selected-pills"></div>
-      <textarea id="selected-json" readonly placeholder="Selected options will appear here..."></textarea>
+        <!-- Gully -->
+        <button
+          class="condensate-hotspot"
+          data-group="external"
+          data-value="external_gully"
+          data-label="External gully"
+          style="top:72%; left:18%;"
+        ></button>
+
+        <!-- Soil / rainwater stack -->
+        <button
+          class="condensate-hotspot"
+          data-group="external"
+          data-value="external_stack"
+          data-label="External soil / rainwater stack"
+          style="top:35%; left:50%;"
+        ></button>
+
+        <!-- Soakaway -->
+        <button
+          class="condensate-hotspot"
+          data-group="external"
+          data-value="external_soakaway"
+          data-label="External soakaway"
+          style="top:68%; left:82%;"
+        ></button>
+      </div>
+
+      <h2>Internal condensate route</h2>
+      <p class="condensate-helper">
+        Tap where you plan to discharge the condensate inside.
+      </p>
+
+      <div class="hotspot-wrapper">
+        <img
+          src="Assets/Condensate-internal.JPG"
+          alt="Internal condensate options"
+          class="hotspot-image"
+        >
+
+        <!-- Direct to sink waste -->
+        <button
+          class="condensate-hotspot"
+          data-group="internal"
+          data-value="internal_sink_waste"
+          data-label="Internal sink waste (gravity)"
+          style="top:75%; left:25%;"
+        ></button>
+
+        <!-- Condensate pump under sink -->
+        <button
+          class="condensate-hotspot"
+          data-group="internal"
+          data-value="internal_pump"
+          data-label="Condensate pump to waste"
+          style="top:77%; left:54%;"
+        ></button>
+
+        <!-- Stack in cupboard / services void -->
+        <button
+          class="condensate-hotspot"
+          data-group="internal"
+          data-value="internal_stack"
+          data-label="Internal soil / service stack"
+          style="top:40%; left:82%;"
+        ></button>
+      </div>
+
+      <!-- This ties into your “new condensate options” logic -->
+      <textarea
+        id="condensate-selection-output"
+        name="condensate_selection"
+        hidden
+      ></textarea>
+
+      <p id="condensate-selection-summary" class="condensate-summary"></p>
     </div>
   </div>
 
   <script>
-    const selections = [];
-    const pills = document.getElementById('selected-pills');
-    const out = document.getElementById('selected-json');
+  (function () {
+    const hotspots = document.querySelectorAll('.condensate-hotspot');
+    const summaryEl = document.getElementById('condensate-selection-summary');
+    const outputEl = document.getElementById('condensate-selection-output');
 
-    function addSelection(label) {
-      if (!selections.includes(label)) {
-        selections.push(label);
-      }
-      renderSelections();
+    if (!hotspots.length || !summaryEl || !outputEl) return;
+
+    const selection = {
+      external: null,
+      internal: null
+    };
+
+    function updateSummary() {
+      const bits = [];
+      if (selection.external) bits.push('External: ' + selection.external.label);
+      if (selection.internal) bits.push('Internal: ' + selection.internal.label);
+
+      summaryEl.textContent = bits.length
+        ? bits.join(' | ')
+        : 'No condensate routes selected yet.';
+
+      // This text can be read by your existing “new condensate options” logic
+      outputEl.value = JSON.stringify(selection);
     }
 
-    function removeSelection(label) {
-      const idx = selections.indexOf(label);
-      if (idx > -1) {
-        selections.splice(idx, 1);
-      }
-      renderSelections();
-    }
+    hotspots.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const group = btn.dataset.group;
+        const label = btn.dataset.label;
+        const value = btn.dataset.value;
 
-    function toggleSelection(label, tile) {
-      if (selections.includes(label)) {
-        removeSelection(label);
-        tile.classList.remove('active');
-      } else {
-        addSelection(label);
-        tile.classList.add('active');
-      }
-    }
+        // clear previous selected hotspot in this group
+        hotspots.forEach(other => {
+          if (other.dataset.group === group && other !== btn) {
+            other.classList.remove('selected');
+          }
+        });
 
-    function renderSelections() {
-      pills.innerHTML = '';
-      selections.forEach(s => {
-        const span = document.createElement('span');
-        span.className = 'pill';
-        span.textContent = s;
-        pills.appendChild(span);
-      });
-      out.value = JSON.stringify({ condensate: selections }, null, 2);
-    }
+        // toggle current button
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          selection[group] = null;
+        } else {
+          btn.classList.add('selected');
+          selection[group] = { value, label };
+        }
 
-    // Option tiles
-    document.querySelectorAll('.option-tile').forEach(tile => {
-      tile.addEventListener('click', () => {
-        const opt = tile.dataset.option;
-        toggleSelection(opt, tile);
-      });
-    });
-
-    // Clear button
-    document.getElementById('clear-all').addEventListener('click', () => {
-      selections.length = 0;
-      document.querySelectorAll('.option-tile').forEach(t => t.classList.remove('active'));
-      renderSelections();
-    });
-
-    // Copy to clipboard
-    document.getElementById('copy-json').addEventListener('click', () => {
-      navigator.clipboard.writeText(out.value).then(() => {
-        alert('Copied to clipboard!');
-      }).catch(err => {
-        console.error('Failed to copy:', err);
-        alert('Could not copy to clipboard. Please select and copy the text manually from the text area below.');
+        updateSummary();
       });
     });
 
-    // Initial render
-    renderSelections();
+    // set initial text
+    updateSummary();
+  })();
   </script>
 </body>
 </html>
