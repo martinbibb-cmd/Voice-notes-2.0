@@ -1906,125 +1906,223 @@
           <div id="survey-tab-new" class="survey-tab-panel">
             <h3>New system</h3>
 
-            <p class="hint">
-              Choose the system you actually recommended. New boilers are assumed to be modern room-sealed fanned-flue units.
-            </p>
+            <!-- Section Navigation for Jumping -->
+            <nav class="survey-section-nav" id="new-system-nav">
+              <button type="button" class="survey-section-nav-btn active" data-section="system-type-section">
+                <span class="nav-icon">🔥</span>
+                <span>System Type</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="cylinder-section">
+                <span class="nav-icon">🛢️</span>
+                <span>Cylinder</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="location-section">
+                <span class="nav-icon">📍</span>
+                <span>Location</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="flue-section">
+                <span class="nav-icon">🏭</span>
+                <span>Flue</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="gas-section">
+                <span class="nav-icon">🔧</span>
+                <span>Gas</span>
+                <span class="nav-check">✓</span>
+              </button>
+              <button type="button" class="survey-section-nav-btn" data-section="controls-section">
+                <span class="nav-icon">⚙️</span>
+                <span>Controls</span>
+                <span class="nav-check">✓</span>
+              </button>
+            </nav>
 
-            <!-- SYSTEM TYPE GRAPHICS STRIP -->
-            <div class="system-options-row">
-              <!-- COMBI -->
-              <div class="system-option-card" data-system="combi">
-                <div class="system-option-image">
-                  <img src="Assets/gravity.JPG" alt="Combi boiler graphic" />
+            <!-- SYSTEM TYPE SECTION -->
+            <div id="system-type-section" class="survey-subsection">
+              <h4>Choose the recommended system type</h4>
+              <p class="hint">
+                Select the system you actually recommended. New boilers are assumed to be modern room-sealed fanned-flue units.
+              </p>
+
+              <!-- SYSTEM TYPE GRAPHICS - Notes-elite style large tiles -->
+              <div class="system-options-row">
+                <!-- COMBI -->
+                <div class="system-option-card" data-system="combi">
+                  <div class="system-option-image">
+                    <img src="Assets/gravity.JPG" alt="Combi boiler graphic" />
+                  </div>
+                  <h4>Combi</h4>
+                  <p>Space-saving, instant hot water. Best when demand is modest &amp; pressure is good.</p>
                 </div>
-                <h4>Combi</h4>
-                <p>Space-saving, instant hot water. Best when demand is modest &amp; pressure is good.</p>
+
+                <!-- SYSTEM -->
+                <div class="system-option-card" data-system="system">
+                  <div class="system-option-image">
+                    <img src="Assets/System-components.JPG" alt="System boiler with cylinder" />
+                  </div>
+                  <h4>System</h4>
+                  <p>Sealed system boiler working with a separate cylinder – good for higher hot-water demand.</p>
+                </div>
+
+                <!-- REGULAR -->
+                <div class="system-option-card" data-system="regular">
+                  <div class="system-option-image">
+                    <img src="Assets/open-vented-schematic.JPG" alt="Regular boiler schematic" />
+                  </div>
+                  <h4>Regular</h4>
+                  <p>Open-vented layout using tanks and a cylinder – best when existing pipework suits keeping it.</p>
+                </div>
               </div>
 
-              <!-- SYSTEM -->
-              <div class="system-option-card" data-system="system">
-                <div class="system-option-image">
-                  <img src="Assets/System-components.JPG" alt="System boiler with cylinder" />
-                </div>
-                <h4>System</h4>
-                <p>Sealed system boiler working with a separate cylinder – good for higher hot-water demand.</p>
-              </div>
-
-              <!-- REGULAR -->
-              <div class="system-option-card" data-system="regular">
-                <div class="system-option-image">
-                  <img src="Assets/open-vented-schematic.JPG" alt="Regular boiler schematic" />
-                </div>
-                <h4>Regular</h4>
-                <p>Open-vented layout using tanks and a cylinder – best when existing pipework suits keeping it.</p>
-              </div>
+              <!-- Hidden field so the app knows what was chosen -->
+              <input type="hidden" id="new-system-type" />
             </div>
-
-            <!-- Hidden field so the app knows what was chosen -->
-            <input type="hidden" id="new-system-type" />
 
             <!-- CYLINDER SECTION: only relevant for SYSTEM or REGULAR -->
-            <div id="new-system-cylinder-section">
-              <h4>Cylinder (for System / Regular)</h4>
-              <p class="hint">
-                Use this when the new system keeps or adds a cylinder. It will be ignored for a combi.
-              </p>
-              <div class="survey-chip-column">
-                <label><input type="radio" name="new-cylinder" value="keep-existing" /> Keep existing cylinder</label>
-                <label><input type="radio" name="new-cylinder" value="new-unvented" /> New unvented cylinder</label>
-                <label><input type="radio" name="new-cylinder" value="new-vented" /> New vented cylinder</label>
-              </div>
-            </div>
-
-            <h4>New boiler location</h4>
-            <div class="survey-grid">
-              <div>
-                <label>Location</label>
-                <div class="survey-chip-row">
-                  <label><input type="radio" name="new-boiler-location" value="same" /> Same as existing</label>
-                  <label><input type="radio" name="new-boiler-location" value="new" /> New location</label>
-                </div>
-                <input id="new-boiler-location-notes"
-                       type="text"
-                       placeholder="If new location, describe route &amp; access" />
-              </div>
-            </div>
-
-            <h4>Flue (new)</h4>
-            <div class="survey-grid">
-              <div>
+            <div id="cylinder-section" class="survey-subsection">
+              <div id="new-system-cylinder-section">
+                <h4>Cylinder (for System / Regular)</h4>
                 <p class="hint">
-                  New boiler will be a modern room-sealed fanned flue. Choose the termination and note any clearance issues.
+                  Select the cylinder option. This section is only relevant when the new system keeps or adds a cylinder.
                 </p>
-                <div class="flue-options-row">
-                  <figure class="flue-option">
-                    <img src="Assets/flue-horizontal-fanned.WEBP" alt="Horizontal fanned flue" />
-                    <figcaption>Horizontal (side / rear)</figcaption>
-                  </figure>
-                  <figure class="flue-option">
-                    <img src="Assets/flue-vertical-pitched-roof.JPG" alt="Vertical flue pitched roof" />
-                    <figcaption>Vertical – pitched roof</figcaption>
-                  </figure>
-                  <figure class="flue-option">
-                    <img src="Assets/flue-vertical-flat-roof.JPG" alt="Vertical flue flat roof" />
-                    <figcaption>Vertical – flat roof</figcaption>
-                  </figure>
+                <div class="cylinder-options-row">
+                  <label class="cylinder-option-tile">
+                    <input type="radio" name="new-cylinder" value="keep-existing" style="display: none;" />
+                    <div class="tile-icon">🔄</div>
+                    <div class="tile-label">Keep Existing</div>
+                    <div class="tile-sublabel">Use current cylinder</div>
+                  </label>
+                  <label class="cylinder-option-tile">
+                    <input type="radio" name="new-cylinder" value="new-unvented" style="display: none;" />
+                    <div class="tile-icon">🔴</div>
+                    <div class="tile-label">New Unvented</div>
+                    <div class="tile-sublabel">Mains pressure system</div>
+                  </label>
+                  <label class="cylinder-option-tile">
+                    <input type="radio" name="new-cylinder" value="new-vented" style="display: none;" />
+                    <div class="tile-icon">🔵</div>
+                    <div class="tile-label">New Vented</div>
+                    <div class="tile-sublabel">Tank in loft required</div>
+                  </label>
                 </div>
-                <textarea id="new-flue-notes" rows="3"
-                          placeholder="Route, bends, plume kit, guards, clearance concerns…"></textarea>
               </div>
             </div>
 
-            <h4>Gas supply &amp; upgrades</h4>
-            <!-- NO survey-grid here so it doesn't split horribly on mobile -->
-            <div class="survey-chip-column">
-              <label><input type="checkbox" value="gas-ok" /> Existing run OK</label>
-              <label><input type="checkbox" value="upgrade-22" /> Upgrade to 22 mm</label>
-              <label><input type="checkbox" value="upgrade-28" /> Upgrade to 28 mm</label>
-              <label><input type="checkbox" value="meter-move" /> Meter move required</label>
-              <label><input type="checkbox" value="meter-upgrade" /> Meter upgrade (U6/U16)</label>
+            <!-- LOCATION SECTION -->
+            <div id="location-section" class="survey-subsection">
+              <h4>New boiler location</h4>
+              <div class="survey-grid">
+                <div>
+                  <label>Location</label>
+                  <div class="survey-chip-row">
+                    <label><input type="radio" name="new-boiler-location" value="same" /> Same as existing</label>
+                    <label><input type="radio" name="new-boiler-location" value="new" /> New location</label>
+                  </div>
+                  <input id="new-boiler-location-notes"
+                         type="text"
+                         placeholder="If new location, describe route &amp; access" />
+                </div>
+              </div>
             </div>
 
-            <h4>Controls &amp; extras</h4>
-
-            <h5 class="bold-label">Controls</h5>
-            <div class="survey-chip-column">
-              <label><input type="radio" name="new-controls" value="basic" /> Programmer + room stat</label>
-              <label><input type="radio" name="new-controls" value="smart" /> Smart controls (e.g. Hive)</label>
-              <label><input type="radio" name="new-controls" value="advanced" /> Weather compensation / advanced controls</label>
+            <!-- FLUE SECTION -->
+            <div id="flue-section" class="survey-subsection">
+              <h4>Flue (new)</h4>
+              <p class="hint">
+                New boiler will be a modern room-sealed fanned flue. Choose the termination and note any clearance issues.
+              </p>
+              <div class="flue-options-row">
+                <figure class="flue-option" data-flue="horizontal">
+                  <img src="Assets/flue-horizontal-fanned.WEBP" alt="Horizontal fanned flue" />
+                  <figcaption>Horizontal (side / rear)</figcaption>
+                </figure>
+                <figure class="flue-option" data-flue="vertical-pitched">
+                  <img src="Assets/flue-vertical-pitched-roof.JPG" alt="Vertical flue pitched roof" />
+                  <figcaption>Vertical – pitched roof</figcaption>
+                </figure>
+                <figure class="flue-option" data-flue="vertical-flat">
+                  <img src="Assets/flue-vertical-flat-roof.JPG" alt="Vertical flue flat roof" />
+                  <figcaption>Vertical – flat roof</figcaption>
+                </figure>
+              </div>
+              <textarea id="new-flue-notes" rows="3"
+                        placeholder="Route, bends, plume kit, guards, clearance concerns…"></textarea>
             </div>
 
-            <h5 class="bold-label">Other works</h5>
-            <div class="survey-chip-column">
-              <label><input type="checkbox" value="remove-cylinder" /> Remove old cylinder</label>
-              <label><input type="checkbox" value="remove-tanks" /> Remove loft tanks</label>
-              <label><input type="checkbox" value="replace-pump" /> Replace pump / valves</label>
-              <label><input type="checkbox" value="add-trvs" /> Add / upgrade TRVs</label>
+            <!-- GAS SECTION -->
+            <div id="gas-section" class="survey-subsection">
+              <h4>Gas supply &amp; upgrades</h4>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="gas-ok" />
+                  <span class="chip-label">✓ Existing run OK</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="upgrade-22" />
+                  <span class="chip-label">📏 Upgrade to 22 mm</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="upgrade-28" />
+                  <span class="chip-label">📐 Upgrade to 28 mm</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="meter-move" />
+                  <span class="chip-label">🔄 Meter move required</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="meter-upgrade" />
+                  <span class="chip-label">⬆️ Meter upgrade (U6/U16)</span>
+                </label>
+              </div>
             </div>
 
-            <h4>Customer-friendly new system summary</h4>
-            <textarea id="new-system-summary" rows="4"
-                      placeholder="Plain-English explanation of what you're proposing and why. This feeds the customer doc."></textarea>
+            <!-- CONTROLS SECTION -->
+            <div id="controls-section" class="survey-subsection">
+              <h4>Controls &amp; extras</h4>
+
+              <h5 class="bold-label">Controls</h5>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="radio" name="new-controls" value="basic" />
+                  <span class="chip-label">📟 Programmer + room stat</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="radio" name="new-controls" value="smart" />
+                  <span class="chip-label">📱 Smart controls (e.g. Hive)</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="radio" name="new-controls" value="advanced" />
+                  <span class="chip-label">🌡️ Weather compensation / advanced</span>
+                </label>
+              </div>
+
+              <h5 class="bold-label">Other works</h5>
+              <div class="survey-tile-chips">
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="remove-cylinder" />
+                  <span class="chip-label">🗑️ Remove old cylinder</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="remove-tanks" />
+                  <span class="chip-label">🗑️ Remove loft tanks</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="replace-pump" />
+                  <span class="chip-label">🔧 Replace pump / valves</span>
+                </label>
+                <label class="survey-tile-chip">
+                  <input type="checkbox" value="add-trvs" />
+                  <span class="chip-label">🌡️ Add / upgrade TRVs</span>
+                </label>
+              </div>
+
+              <h4>Customer-friendly new system summary</h4>
+              <textarea id="new-system-summary" rows="4"
+                        placeholder="Plain-English explanation of what you're proposing and why. This feeds the customer doc."></textarea>
+            </div>
           </div>
 
         </div> <!-- /.survey-tab-panels -->

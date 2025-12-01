@@ -96,6 +96,8 @@ function initFourTabSurvey() {
       newSystemTypeInput.value = systemType;
     }
     updateCylinderVisibility(systemType);
+    // Mark section as completed
+    updateSectionNavCompletion('system-type-section', true);
   }
 
   systemCards.forEach(card => {
@@ -110,6 +112,18 @@ function initFourTabSurvey() {
     // default: no selection, hide cylinder until user selects a type
     updateCylinderVisibility('');
   }
+
+  // --- Section Navigation (jumping between sections) ---
+  initSectionNavigation();
+
+  // --- Cylinder tile selection ---
+  initCylinderTileSelection();
+
+  // --- Flue tile selection ---
+  initFlueTileSelection();
+
+  // --- Tile chip selection states ---
+  initTileChipSelection();
 
   // --- Sync from voice button (new UI) ---
   const syncBtn = document.getElementById('survey-sync-from-voice');
@@ -139,12 +153,147 @@ function initFourTabSurvey() {
         if (newSystemTypeInput) newSystemTypeInput.value = '';
         // Reset cylinder visibility when clearing
         updateCylinderVisibility('');
+        // Clear all selections
+        document.querySelectorAll('.cylinder-option-tile.selected, .flue-option.selected, .survey-tile-chip.selected').forEach(el => {
+          el.classList.remove('selected');
+        });
+        // Reset nav completion states
+        document.querySelectorAll('.survey-section-nav-btn').forEach(btn => {
+          btn.classList.remove('completed');
+        });
         console.log('[SurveyIntegration] All survey fields cleared');
       }
     });
   }
 
   console.log('[SurveyIntegration] 4-tab survey initialized');
+}
+
+/**
+ * Initialize section navigation for jumping between sub-sections
+ */
+function initSectionNavigation() {
+  const navButtons = document.querySelectorAll('.survey-section-nav-btn');
+  
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sectionId = btn.dataset.section;
+      const targetSection = document.getElementById(sectionId);
+      
+      if (targetSection) {
+        // Scroll to section
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Update active state
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    });
+  });
+}
+
+/**
+ * Update section navigation completion state
+ */
+function updateSectionNavCompletion(sectionId, isCompleted) {
+  const navBtn = document.querySelector(`.survey-section-nav-btn[data-section="${sectionId}"]`);
+  if (navBtn) {
+    navBtn.classList.toggle('completed', isCompleted);
+  }
+}
+
+/**
+ * Initialize cylinder tile selection
+ */
+function initCylinderTileSelection() {
+  const cylinderTiles = document.querySelectorAll('.cylinder-option-tile');
+  
+  cylinderTiles.forEach(tile => {
+    tile.addEventListener('click', () => {
+      // Single select - remove selected from others
+      cylinderTiles.forEach(t => t.classList.remove('selected'));
+      tile.classList.add('selected');
+      
+      // Check the radio input
+      const radio = tile.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+      }
+      
+      // Mark section as completed
+      updateSectionNavCompletion('cylinder-section', true);
+    });
+  });
+}
+
+/**
+ * Initialize flue tile selection
+ */
+function initFlueTileSelection() {
+  const flueTiles = document.querySelectorAll('.flue-option');
+  
+  flueTiles.forEach(tile => {
+    tile.addEventListener('click', () => {
+      // Single select - remove selected from others
+      flueTiles.forEach(t => t.classList.remove('selected'));
+      tile.classList.add('selected');
+      
+      // Mark section as completed
+      updateSectionNavCompletion('flue-section', true);
+    });
+  });
+}
+
+/**
+ * Initialize tile chip selection states
+ */
+function initTileChipSelection() {
+  const tileChips = document.querySelectorAll('.survey-tile-chip');
+  
+  tileChips.forEach(chip => {
+    const input = chip.querySelector('input');
+    
+    if (input) {
+      // Update selected state based on input
+      input.addEventListener('change', () => {
+        if (input.type === 'checkbox') {
+          chip.classList.toggle('selected', input.checked);
+        } else if (input.type === 'radio') {
+          // For radios, update all chips in the same group
+          const name = input.name;
+          document.querySelectorAll(`.survey-tile-chip input[name="${name}"]`).forEach(r => {
+            r.closest('.survey-tile-chip').classList.toggle('selected', r.checked);
+          });
+        }
+        
+        // Check for gas section completion
+        const gasChips = document.querySelectorAll('#gas-section .survey-tile-chip input:checked');
+        if (gasChips.length > 0) {
+          updateSectionNavCompletion('gas-section', true);
+        }
+        
+        // Check for controls section completion
+        const controlsChips = document.querySelectorAll('#controls-section .survey-tile-chip input:checked');
+        if (controlsChips.length > 0) {
+          updateSectionNavCompletion('controls-section', true);
+        }
+      });
+      
+      // Set initial state
+      if (input.checked) {
+        chip.classList.add('selected');
+      }
+    }
+  });
+  
+  // Track location section completion
+  const locationInputs = document.querySelectorAll('#location-section input');
+  locationInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      const hasSelection = Array.from(document.querySelectorAll('#location-section input')).some(i => i.checked || i.value);
+      updateSectionNavCompletion('location-section', hasSelection);
+    });
+  });
 }
 
 /**
