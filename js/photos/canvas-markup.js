@@ -2,6 +2,25 @@
 // Canvas-based photo annotation and markup tools
 // Based on Clearances-Genie implementation
 
+const PhotoViewport = {
+  img: null,          // HTMLImageElement
+  imgWidth: 0,        // naturalWidth
+  imgHeight: 0,       // naturalHeight
+  baseScale: 1,       // fit-to-canvas scale
+  zoomFactor: 1,      // 1 = 100%, 2 = 200%, etc.
+  offsetX: 0,         // canvas-space offset where image origin (0,0) is drawn
+  offsetY: 0,
+  annotations: [],    // each annotation in IMAGE space, not canvas space
+  lat: null,
+  lng: null,
+  panX: 0,
+  panY: 0
+};
+
+function getCurrentScale() {
+  return PhotoViewport.baseScale * PhotoViewport.zoomFactor;
+}
+
 export default class PhotoMarkup {
   constructor() {
     this.canvas = document.getElementById('markup-canvas');
@@ -12,7 +31,6 @@ export default class PhotoMarkup {
     this.originalImage = null;
     this.imageData = null;
 
-    this.elements = []; // Stored markup elements
     this.currentElement = null;
 
     this.colors = {
@@ -27,12 +45,9 @@ export default class PhotoMarkup {
     this.currentColor = this.colors.red;
     this.lineWidth = 3;
 
-    // Zoom and pan properties
-    this.scale = 1;
-    this.panX = 0;
-    this.panY = 0;
-    this.minScale = 0.1;
-    this.maxScale = 5;
+    // Zoom properties
+    this.minScale = 0.5;
+    this.maxScale = 4;
 
     this.setupCanvas();
   }
@@ -59,15 +74,8 @@ export default class PhotoMarkup {
     }
 
     img.onload = () => {
-      // Set canvas size to match image
-      this.canvas.width = img.width;
-      this.canvas.height = img.height;
-
-      // Draw image
-      this.ctx.drawImage(img, 0, 0);
-
-      // Store original image and data
       this.originalImage = img;
+      initPhotoViewportWithImage(img, this.canvas);
       this.imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
 
       console.log('Image loaded:', img.width, 'x', img.height);
@@ -84,66 +92,67 @@ export default class PhotoMarkup {
   }
 
   handleMouseDown(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+    const { x, y } = this.getCanvasCoordinates(e);
+    const imgPoint = canvasToImageCoords(x, y);
 
     this.isDrawing = true;
-    this.startPos = { x, y };
+    this.startPos = imgPoint;
 
     if (this.currentTool === 'point') {
-      this.drawPoint(x, y);
+      this.addPoint(imgPoint.x, imgPoint.y);
       this.isDrawing = false;
     } else if (this.currentTool === 'text') {
-      this.addText(x, y);
+      this.addText(imgPoint.x, imgPoint.y);
       this.isDrawing = false;
+    } else {
+      this.currentElement = {
+        type: this.currentTool,
+        x: imgPoint.x,
+        y: imgPoint.y,
+        w: 0,
+        h: 0,
+        color: this.currentColor,
+        lineWidth: this.lineWidth
+      };
     }
   }
 
   handleMouseMove(e) {
-    if (!this.isDrawing || !this.startPos) return;
+    if (!this.isDrawing || !this.startPos || !this.currentElement) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
-
-    // Redraw canvas with preview
-    this.redrawCanvas();
-
-    this.ctx.strokeStyle = this.currentColor;
-    this.ctx.fillStyle = this.currentColor;
-    this.ctx.lineWidth = this.lineWidth;
+    const { x, y } = this.getCanvasCoordinates(e);
+    const imgPoint = canvasToImageCoords(x, y);
 
     if (this.currentTool === 'rectangle') {
-      this.previewRectangle(this.startPos.x, this.startPos.y, x, y);
+      this.currentElement.w = imgPoint.x - this.startPos.x;
+      this.currentElement.h = imgPoint.y - this.startPos.y;
     } else if (this.currentTool === 'circle') {
-      this.previewCircle(this.startPos.x, this.startPos.y, x, y);
+      const dx = imgPoint.x - this.startPos.x;
+      const dy = imgPoint.y - this.startPos.y;
+      this.currentElement.r = Math.sqrt(dx * dx + dy * dy);
     } else if (this.currentTool === 'arrow') {
-      this.previewArrow(this.startPos.x, this.startPos.y, x, y);
+      this.currentElement.x2 = imgPoint.x;
+      this.currentElement.y2 = imgPoint.y;
+    }
+
+    drawPhotoAndAnnotations(this.canvas);
+    if (this.currentElement) {
+      const scale = getCurrentScale();
+      drawAnnotation(this.ctx, this.currentElement, scale, PhotoViewport.offsetX, PhotoViewport.offsetY, this.currentColor, this.lineWidth);
     }
   }
 
-  handleMouseUp(e) {
-    if (!this.isDrawing || !this.startPos) return;
+  handleMouseUp() {
+    if (!this.isDrawing || !this.startPos || !this.currentElement) return;
 
-    const rect = this.canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+    if (this.currentTool === 'rectangle' && (this.currentElement.w === 0 || this.currentElement.h === 0)) {
+      this.resetDrawingState();
+      return;
+    }
 
-    // Save the element
-    const element = {
-      type: this.currentTool,
-      start: this.startPos,
-      end: { x, y },
-      color: this.currentColor,
-      lineWidth: this.lineWidth
-    };
-
-    this.elements.push(element);
-    this.redrawCanvas();
-
-    this.isDrawing = false;
-    this.startPos = null;
+    PhotoViewport.annotations.push({ ...this.currentElement });
+    this.resetDrawingState();
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   handleTouchStart(e) {
@@ -172,216 +181,259 @@ export default class PhotoMarkup {
     this.canvas.dispatchEvent(mouseEvent);
   }
 
-  drawPoint(x, y) {
-    this.ctx.fillStyle = this.currentColor;
-    this.ctx.beginPath();
-    this.ctx.arc(x, y, 8, 0, Math.PI * 2);
-    this.ctx.fill();
-
-    // Add cross hairs
-    this.ctx.strokeStyle = this.currentColor;
-    this.ctx.lineWidth = 2;
-    this.ctx.beginPath();
-    this.ctx.moveTo(x - 15, y);
-    this.ctx.lineTo(x + 15, y);
-    this.ctx.moveTo(x, y - 15);
-    this.ctx.lineTo(x, y + 15);
-    this.ctx.stroke();
-
-    this.elements.push({
+  addPoint(x, y) {
+    const annotation = {
       type: 'point',
       x,
       y,
       color: this.currentColor
-    });
-  }
+    };
 
-  previewRectangle(x1, y1, x2, y2) {
-    this.ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-  }
-
-  previewCircle(x1, y1, x2, y2) {
-    const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    this.ctx.beginPath();
-    this.ctx.arc(x1, y1, radius, 0, Math.PI * 2);
-    this.ctx.stroke();
-  }
-
-  previewArrow(x1, y1, x2, y2) {
-    const headlen = 20;
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-
-    // Draw line
-    this.ctx.beginPath();
-    this.ctx.moveTo(x1, y1);
-    this.ctx.lineTo(x2, y2);
-    this.ctx.stroke();
-
-    // Draw arrowhead
-    this.ctx.beginPath();
-    this.ctx.moveTo(x2, y2);
-    this.ctx.lineTo(
-      x2 - headlen * Math.cos(angle - Math.PI / 6),
-      y2 - headlen * Math.sin(angle - Math.PI / 6)
-    );
-    this.ctx.moveTo(x2, y2);
-    this.ctx.lineTo(
-      x2 - headlen * Math.cos(angle + Math.PI / 6),
-      y2 - headlen * Math.sin(angle + Math.PI / 6)
-    );
-    this.ctx.stroke();
+    PhotoViewport.annotations.push(annotation);
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   addText(x, y) {
     const text = prompt('Enter text:');
     if (!text) return;
 
-    this.ctx.font = '20px Arial';
-    this.ctx.fillStyle = this.currentColor;
-    this.ctx.fillText(text, x, y);
-
-    this.elements.push({
+    const annotation = {
       type: 'text',
       x,
       y,
       text,
       color: this.currentColor,
-      font: '20px Arial'
-    });
+      font: '16px sans-serif'
+    };
+
+    PhotoViewport.annotations.push(annotation);
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   redrawCanvas() {
-    // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Redraw original image
-    if (this.originalImage) {
-      this.ctx.drawImage(this.originalImage, 0, 0);
-    }
-
-    // Redraw all elements
-    this.elements.forEach(element => {
-      this.ctx.strokeStyle = element.color;
-      this.ctx.fillStyle = element.color;
-      this.ctx.lineWidth = element.lineWidth || this.lineWidth;
-
-      if (element.type === 'point') {
-        this.ctx.fillStyle = element.color;
-        this.ctx.beginPath();
-        this.ctx.arc(element.x, element.y, 8, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        this.ctx.strokeStyle = element.color;
-        this.ctx.lineWidth = 2;
-        this.ctx.beginPath();
-        this.ctx.moveTo(element.x - 15, element.y);
-        this.ctx.lineTo(element.x + 15, element.y);
-        this.ctx.moveTo(element.x, element.y - 15);
-        this.ctx.lineTo(element.x, element.y + 15);
-        this.ctx.stroke();
-      } else if (element.type === 'rectangle') {
-        this.ctx.strokeRect(
-          element.start.x,
-          element.start.y,
-          element.end.x - element.start.x,
-          element.end.y - element.start.y
-        );
-      } else if (element.type === 'circle') {
-        const radius = Math.sqrt(
-          Math.pow(element.end.x - element.start.x, 2) +
-          Math.pow(element.end.y - element.start.y, 2)
-        );
-        this.ctx.beginPath();
-        this.ctx.arc(element.start.x, element.start.y, radius, 0, Math.PI * 2);
-        this.ctx.stroke();
-      } else if (element.type === 'arrow') {
-        this.previewArrow(
-          element.start.x,
-          element.start.y,
-          element.end.x,
-          element.end.y
-        );
-      } else if (element.type === 'text') {
-        this.ctx.font = element.font || '20px Arial';
-        this.ctx.fillStyle = element.color;
-        this.ctx.fillText(element.text, element.x, element.y);
-      }
-    });
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   clear() {
-    this.elements = [];
+    PhotoViewport.annotations = [];
     this.redrawCanvas();
   }
 
   export() {
-    // Export as PNG data URL
+    drawPhotoAndAnnotations(this.canvas);
     return this.canvas.toDataURL('image/png');
   }
 
   getOriginalDataUrl() {
     // Export the original image (without markup) as a data URL
-    if (!this.originalImage) {
+    if (!PhotoViewport.img) {
       return null;
     }
-    
+
     // Create a temporary canvas to get the original image data URL
     const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = this.originalImage.width || this.originalImage.naturalWidth;
-    tempCanvas.height = this.originalImage.height || this.originalImage.naturalHeight;
+    tempCanvas.width = PhotoViewport.imgWidth;
+    tempCanvas.height = PhotoViewport.imgHeight;
     const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(this.originalImage, 0, 0);
-    
+    tempCtx.drawImage(PhotoViewport.img, 0, 0);
+
     return tempCanvas.toDataURL('image/jpeg', 0.95);
   }
 
   undo() {
-    if (this.elements.length > 0) {
-      this.elements.pop();
-      this.redrawCanvas();
-    }
+    if (PhotoViewport.annotations.length === 0) return;
+    PhotoViewport.annotations.pop();
+    this.redrawCanvas();
   }
 
   // Zoom controls
   zoomIn() {
-    this.scale = Math.min(this.scale * 1.2, this.maxScale);
-    this.applyTransform();
+    this.setZoomFactor(PhotoViewport.zoomFactor * 1.25);
   }
 
   zoomOut() {
-    this.scale = Math.max(this.scale / 1.2, this.minScale);
-    this.applyTransform();
+    this.setZoomFactor(PhotoViewport.zoomFactor * 0.8);
   }
 
   zoomReset() {
-    this.scale = 1;
-    this.panX = 0;
-    this.panY = 0;
-    this.applyTransform();
+    this.setZoomFactor(1);
   }
 
-  // Pan controls
+  // Pan controls (optional)
   panUp() {
-    this.panY += 50;
-    this.applyTransform();
+    PhotoViewport.panY -= 20;
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   panDown() {
-    this.panY -= 50;
-    this.applyTransform();
+    PhotoViewport.panY += 20;
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   panLeft() {
-    this.panX += 50;
-    this.applyTransform();
+    PhotoViewport.panX -= 20;
+    drawPhotoAndAnnotations(this.canvas);
   }
 
   panRight() {
-    this.panX -= 50;
-    this.applyTransform();
+    PhotoViewport.panX += 20;
+    drawPhotoAndAnnotations(this.canvas);
   }
 
-  applyTransform() {
-    this.canvas.style.transform = `scale(${this.scale}) translate(${this.panX}px, ${this.panY}px)`;
+  setZoomFactor(factor) {
+    PhotoViewport.zoomFactor = Math.max(this.minScale, Math.min(this.maxScale, factor));
+    drawPhotoAndAnnotations(this.canvas);
   }
+
+  getAnnotations() {
+    return PhotoViewport.annotations.map(ann => ({ ...ann }));
+  }
+
+  getCanvasCoordinates(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+    const clientX = e.clientX || (e.touches && e.touches[0]?.clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0]?.clientY);
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY
+    };
+  }
+
+  resetDrawingState() {
+    this.isDrawing = false;
+    this.startPos = null;
+    this.currentElement = null;
+  }
+}
+
+function initPhotoViewportWithImage(img, canvas) {
+  PhotoViewport.img = img;
+  PhotoViewport.imgWidth = img.naturalWidth;
+  PhotoViewport.imgHeight = img.naturalHeight;
+  PhotoViewport.panX = 0;
+  PhotoViewport.panY = 0;
+
+  canvas.width = canvas.clientWidth || 800;
+  canvas.height = canvas.clientHeight || 450;
+
+  const canvasW = canvas.width;
+  const canvasH = canvas.height;
+
+  const scaleX = canvasW / PhotoViewport.imgWidth;
+  const scaleY = canvasH / PhotoViewport.imgHeight;
+
+  PhotoViewport.baseScale = Math.min(scaleX, scaleY);
+  PhotoViewport.zoomFactor = 1;
+
+  const scaledW = PhotoViewport.imgWidth * PhotoViewport.baseScale;
+  const scaledH = PhotoViewport.imgHeight * PhotoViewport.baseScale;
+
+  PhotoViewport.offsetX = (canvasW - scaledW) / 2;
+  PhotoViewport.offsetY = (canvasH - scaledH) / 2;
+
+  PhotoViewport.annotations = [];
+
+  drawPhotoAndAnnotations(canvas);
+}
+
+function drawPhotoAndAnnotations(canvas) {
+  if (!PhotoViewport.img) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const scale = getCurrentScale();
+  const imgW = PhotoViewport.imgWidth * scale;
+  const imgH = PhotoViewport.imgHeight * scale;
+
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+
+  const imgX = centerX - imgW / 2 + PhotoViewport.panX;
+  const imgY = centerY - imgH / 2 + PhotoViewport.panY;
+
+  PhotoViewport.offsetX = imgX;
+  PhotoViewport.offsetY = imgY;
+
+  ctx.drawImage(PhotoViewport.img, imgX, imgY, imgW, imgH);
+
+  PhotoViewport.annotations.forEach((ann) => {
+    drawAnnotation(ctx, ann, scale, imgX, imgY);
+  });
+}
+
+function drawAnnotation(ctx, ann, scale, imgX, imgY) {
+  ctx.save();
+  ctx.lineWidth = ann.lineWidth || 2;
+  ctx.strokeStyle = ann.color || '#ff0000';
+  ctx.fillStyle = ann.color || '#ff0000';
+
+  const x = imgX + ann.x * scale;
+  const y = imgY + ann.y * scale;
+
+  switch (ann.type) {
+    case 'point':
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    case 'rectangle':
+    case 'rect': {
+      const w = (ann.w || 0) * scale;
+      const h = (ann.h || 0) * scale;
+      ctx.strokeRect(x, y, w, h);
+      break;
+    }
+    case 'circle': {
+      const r = (ann.r || 0) * scale;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.stroke();
+      break;
+    }
+    case 'text': {
+      ctx.font = ann.font || '16px sans-serif';
+      ctx.fillText(ann.text || '', x + 4, y - 4);
+      break;
+    }
+    case 'arrow': {
+      const x2 = imgX + (ann.x2 || ann.x) * scale;
+      const y2 = imgY + (ann.y2 || ann.y) * scale;
+      drawArrow(ctx, x, y, x2, y2);
+      break;
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawArrow(ctx, x1, y1, x2, y2) {
+  const headLen = 10;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const angle = Math.atan2(dy, dx);
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6),
+             y2 - headLen * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6),
+             y2 - headLen * Math.sin(angle + Math.PI / 6));
+  ctx.closePath();
+  ctx.fill();
+}
+
+function canvasToImageCoords(canvasX, canvasY) {
+  const scale = getCurrentScale();
+  const imgX = PhotoViewport.offsetX;
+  const imgY = PhotoViewport.offsetY;
+
+  const xInImage = (canvasX - imgX) / scale;
+  const yInImage = (canvasY - imgY) / scale;
+  return { x: xInImage, y: yInImage };
 }
