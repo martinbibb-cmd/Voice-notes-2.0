@@ -318,39 +318,7 @@ class VoiceNotes2App {
 
     document.getElementById('save-marked-photo').addEventListener('click', () => {
       const annotation = photoAnnotation.value;
-      const markedPhoto = this.photoMarkup.export();
-      
-      // Get original image as data URL
-      const originalDataUrl = this.photoMarkup.getOriginalDataUrl();
-
-      const photoData = {
-        id: Date.now(),
-        timestamp: new Date().toISOString(),
-        section: this.state.currentSection,
-        annotation: annotation,
-        original: originalDataUrl,
-        marked: markedPhoto
-      };
-      
-      // Add location if available
-      if (this.currentPhotoLocation) {
-        photoData.location = this.currentPhotoLocation;
-      }
-
-      this.state.currentJob.photos.push(photoData);
-
-      this.updatePhotoGallery();
-      photoAnnotation.value = '';
-      this.currentPhotoLocation = null;
-
-      // Hide canvas and tools
-      canvasContainer.classList.remove('active');
-      markupTools.style.display = 'none';
-
-      const locationMsg = photoData.location 
-        ? ` Location: ${photoData.location.latitude.toFixed(6)}, ${photoData.location.longitude.toFixed(6)}`
-        : ' (Location not available)';
-      alert('Photo saved with markup!' + locationMsg);
+      this.getPhotoLocationAndSave(annotation);
     });
 
     annotateVoiceBtn.addEventListener('click', async () => {
@@ -579,6 +547,84 @@ class VoiceNotes2App {
     markupTools.style.display = 'flex';
   }
 
+  getPhotoLocationAndSave(annotationText) {
+    const markedPhoto = this.photoMarkup.export();
+    const originalDataUrl = this.photoMarkup.getOriginalDataUrl();
+    const annotations = this.photoMarkup.getAnnotations();
+    const fallbackLocation = this.currentPhotoLocation;
+
+    const saveWithCoords = (lat, lng) => {
+      const photoRecord = {
+        id: `photo_${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        timestamp: new Date().toISOString(),
+        section: this.state.currentSection,
+        annotation: annotationText,
+        original: originalDataUrl,
+        marked: markedPhoto,
+        annotations,
+        lat,
+        lng,
+        createdAt: new Date().toISOString()
+      };
+      this.addPhotoToJob(photoRecord);
+    };
+
+    if (!navigator.geolocation) {
+      if (fallbackLocation) {
+        saveWithCoords(fallbackLocation.latitude ?? fallbackLocation.lat ?? null, fallbackLocation.longitude ?? fallbackLocation.lng ?? null);
+      } else {
+        saveWithCoords(null, null);
+      }
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        saveWithCoords(pos.coords.latitude, pos.coords.longitude);
+      },
+      (err) => {
+        console.warn('Geolocation error while saving photo', err);
+        if (fallbackLocation) {
+          saveWithCoords(fallbackLocation.latitude ?? fallbackLocation.lat ?? null, fallbackLocation.longitude ?? fallbackLocation.lng ?? null);
+        } else {
+          saveWithCoords(null, null);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000
+      }
+    );
+  }
+
+  addPhotoToJob(photoRecord) {
+    const canvasContainer = document.getElementById('canvas-container');
+    const markupTools = document.getElementById('markup-tools');
+    const photoAnnotation = document.getElementById('photo-annotation');
+
+    this.state.currentJob.photos.push(photoRecord);
+
+    this.updatePhotoGallery();
+    if (photoAnnotation) {
+      photoAnnotation.value = '';
+    }
+    this.currentPhotoLocation = null;
+
+    if (canvasContainer) {
+      canvasContainer.classList.remove('active');
+    }
+    if (markupTools) {
+      markupTools.style.display = 'none';
+    }
+
+    const hasCoords = photoRecord.lat !== null && photoRecord.lat !== undefined &&
+      photoRecord.lng !== null && photoRecord.lng !== undefined;
+    const locationMsg = hasCoords
+      ? `GPS: ${photoRecord.lat.toFixed(6)}, ${photoRecord.lng.toFixed(6)}`
+      : 'GPS: not captured';
+    alert(`Photo saved with markup! ${locationMsg}`);
+  }
+
   async updateSections(transcript) {
     // AI-powered section auto-population using Cloudflare Worker
     if (!transcript || transcript.length < 10) {
@@ -724,10 +770,13 @@ class VoiceNotes2App {
     }
 
     gallery.innerHTML = photos.map(photo => {
-      const locationInfo = photo.location 
-        ? `<div class="photo-location">📍 ${photo.location.latitude.toFixed(4)}, ${photo.location.longitude.toFixed(4)}</div>`
-        : '';
-      
+      const lat = photo.lat ?? photo.location?.latitude;
+      const lng = photo.lng ?? photo.location?.longitude;
+      const hasCoords = lat !== null && lat !== undefined && lng !== null && lng !== undefined;
+      const locationInfo = hasCoords
+        ? `<div class="photo-location">📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}</div>`
+        : '<div class="photo-location">GPS: not captured</div>';
+
       return `
         <div class="photo-item" data-photo-id="${photo.id}">
           <img src="${photo.marked}" alt="Photo">
